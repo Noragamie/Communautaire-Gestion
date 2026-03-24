@@ -1,0 +1,72 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\AuthLog;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class LoginController extends Controller
+{
+    public function showLoginForm() 
+    { 
+        return view('auth.login'); 
+    }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required',
+        ], [
+            'email.required' => 'L\'adresse email est requise.',
+            'email.email' => 'L\'adresse email n\'est pas valide.',
+            'password.required' => 'Le mot de passe est requis.',
+        ]);
+
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+
+            AuthLog::create([
+                'user_id'    => Auth::id(),
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'action'     => 'login',
+            ]);
+
+            return match(Auth::user()->role) {
+                'admin'     => redirect()->route('admin.dashboard'),
+                'operateur' => redirect()->route('operator.profile.show'),
+                default     => redirect()->route('home'),
+            };
+        }
+
+        AuthLog::create([
+            'user_id'    => null,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'action'     => 'failed',
+        ]);
+
+        return back()->withErrors([
+            'email' => 'Ces identifiants ne correspondent à aucun compte. Vérifiez votre email et mot de passe.',
+        ])->withInput($request->only('email'));
+    }
+
+    public function logout(Request $request)
+    {
+        AuthLog::create([
+            'user_id'    => Auth::id(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'action'     => 'logout',
+        ]);
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/');
+    }
+}
