@@ -6,9 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Mail\NewsletterMail;
 use App\Models\Actuality;
 use App\Models\Newsletter;
+use App\Models\User;
+use App\Notifications\ActualityPublished;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 
 class ActualityController extends Controller
 {
@@ -52,8 +55,10 @@ class ActualityController extends Controller
 
             if ($publish) {
                 Newsletter::where('subscribed', true)->each(function ($subscriber) use ($actuality) {
-                    Mail::to($subscriber->email)->queue(new NewsletterMail($actuality, $subscriber->token));
+                    Mail::to($subscriber->email)->send(new NewsletterMail($actuality, $subscriber->token));
                 });
+                $users = User::where('is_active', true)->get();
+                Notification::send($users, new ActualityPublished($actuality));
             }
 
             $message = $publish ? 'Actualité publiée et newsletter envoyée.' : 'Actualité enregistrée comme brouillon.';
@@ -99,8 +104,10 @@ class ActualityController extends Controller
 
             if ($publish && !$actuality->wasRecentlyCreated) {
                 Newsletter::where('subscribed', true)->each(function ($subscriber) use ($actuality) {
-                    Mail::to($subscriber->email)->queue(new NewsletterMail($actuality, $subscriber->token));
+                    Mail::to($subscriber->email)->send(new NewsletterMail($actuality, $subscriber->token));
                 });
+                $users = User::where('is_active', true)->get();
+                Notification::send($users, new ActualityPublished($actuality));
             }
 
             $message = $publish ? 'Actualité publiée.' : 'Brouillon enregistré.';
@@ -116,8 +123,10 @@ class ActualityController extends Controller
             $actuality->update(['is_published' => true, 'published_at' => now()]);
 
             Newsletter::where('subscribed', true)->each(function ($subscriber) use ($actuality) {
-                Mail::to($subscriber->email)->queue(new NewsletterMail($actuality, $subscriber->token));
+                Mail::to($subscriber->email)->send(new NewsletterMail($actuality, $subscriber->token));
             });
+            $users = User::where('is_active', true)->get();
+            Notification::send($users, new ActualityPublished($actuality));
 
             return back()->with('success', 'Actualité publiée et newsletter envoyée aux abonnés.');
         } catch (\Exception $e) {
