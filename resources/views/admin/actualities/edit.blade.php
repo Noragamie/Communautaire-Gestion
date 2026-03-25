@@ -31,7 +31,7 @@
                 <button type="submit"
                         @click="$refs.action.value = 'publish'"
                         :disabled="loading"
-                        class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium text-sm transition-all disabled:opacity-50 flex items-center gap-2">
+                        class="px-5 py-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-medium text-sm transition-all disabled:opacity-50 flex items-center gap-2">
                     <svg x-show="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -80,8 +80,8 @@
                 </div>
                 <input type="file" name="image" accept="image/*"
                        @change="imagePreview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null"
-                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all text-sm text-gray-500
-                              file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100">
+                       class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 transition-all text-sm text-gray-500
+                              file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-600 hover:file:bg-primary-100">
                 <p class="text-xs text-gray-400 mt-1">PNG, JPG, GIF — max 2 Mo. Laisser vide pour conserver l'image actuelle.</p>
                 @error('image')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>

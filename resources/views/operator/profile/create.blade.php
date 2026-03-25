@@ -1,202 +1,254 @@
 @extends('layouts.app')
-@section('title', 'Créer mon profil')
+@section('title', 'Inscription - Créer mon profil')
 
 @section('content')
-<div class="max-w-5xl mx-auto">
+<div class="max-w-4xl mx-auto">
     <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">Créer mon profil professionnel</h1>
-        <p class="text-lg text-gray-600 dark:text-gray-400">Complétez votre profil pour rejoindre notre communauté d'entrepreneurs</p>
+    <div class="mb-8 text-center">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Inscription</h1>
+        <p class="text-gray-600">Rejoignez la communauté des acteurs économiques de la commune</p>
     </div>
 
     <!-- Progress Steps -->
-    <div class="mb-12 flex items-center justify-between">
-        <div class="flex items-center w-full">
-            <div class="flex flex-col items-center flex-1">
-                <div class="w-12 h-12 rounded-full bg-accent-blue text-white flex items-center justify-center font-bold text-lg">1</div>
-                <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">Informations</p>
+    <div class="mb-8 flex items-center justify-center gap-4">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
             </div>
-            <div class="flex-1 h-1 bg-gray-300 dark:bg-gray-600 mx-2"></div>
-            <div class="flex flex-col items-center flex-1">
-                <div class="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400 flex items-center justify-center font-bold text-lg">2</div>
-                <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mt-2">Documents</p>
+            <span class="text-sm font-medium text-gray-700">Informations personnelles</span>
+        </div>
+        <div class="w-12 h-0.5 bg-gray-300"></div>
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
             </div>
-            <div class="flex-1 h-1 bg-gray-300 dark:bg-gray-600 mx-2"></div>
-            <div class="flex flex-col items-center flex-1">
-                <div class="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400 flex items-center justify-center font-bold text-lg">3</div>
-                <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mt-2">Confirmation</p>
-            </div>
+            <span class="text-sm font-medium text-gray-700">Informations professionnelles</span>
+        </div>
+        <div class="w-12 h-0.5 bg-gray-300"></div>
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-bold">3</div>
+            <span class="text-sm font-medium text-primary-600">Documents</span>
+        </div>
+        <div class="w-12 h-0.5 bg-gray-300"></div>
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-sm font-bold">4</div>
+            <span class="text-sm font-medium text-gray-500">Récapitulatif</span>
         </div>
     </div>
 
     <form method="POST" action="{{ route('operator.profile.store') }}" enctype="multipart/form-data"
-          x-data="{ loading: false, photoPreview: null }" @submit="loading = true" class="space-y-8">
+          x-data="{ 
+              loading: false, 
+              photoPreview: null,
+              cvFile: null,
+              otherFiles: []
+          }" 
+          @submit="loading = true" 
+          class="space-y-6">
         @csrf
 
-        <!-- Section 1: Informations de base -->
-        <div class="glass-card rounded-2xl p-8 border border-white/10">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-                <span class="w-8 h-8 rounded-full bg-accent-blue text-white flex items-center justify-center text-sm font-bold">1</span>
-                Informations de base
-            </h2>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Catégorie -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Catégorie professionnelle *</label>
-                    <select name="category_id" required
-                            class="w-full px-4 py-3 bg-white dark:bg-dark-700 border border-gray-300 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-accent-blue focus:border-transparent transition-all text-gray-900 dark:text-white">
-                        <option value="">Sélectionner une catégorie...</option>
-                        @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('category_id')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
-                </div>
-
-                <!-- Localisation -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Localisation *</label>
-                    <input type="text" name="localisation" value="{{ old('localisation') }}" required
-                           class="w-full px-4 py-3 bg-white dark:bg-dark-700 border border-gray-300 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-accent-blue focus:border-transparent transition-all text-gray-900 dark:text-white"
-                           placeholder="Ex: Cotonou">
-                    @error('localisation')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
-                </div>
-
-                <!-- Secteur d'activité -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Secteur d'activité *</label>
-                    <input type="text" name="secteur_activite" value="{{ old('secteur_activite') }}" required
-                           class="w-full px-4 py-3 bg-white dark:bg-dark-700 border border-gray-300 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-accent-blue focus:border-transparent transition-all text-gray-900 dark:text-white"
-                           placeholder="Ex: Artisanat, Commerce, Services">
-                    @error('secteur_activite')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
-                </div>
-            </div>
-
-            <!-- Bio -->
-            <div class="mt-6">
-                <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Biographie</label>
-                <textarea name="bio" rows="4"
-                          class="w-full px-4 py-3 bg-white dark:bg-dark-700 border border-gray-300 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-accent-blue focus:border-transparent transition-all text-gray-900 dark:text-white"
-                          placeholder="Parlez-nous de vous, votre expérience, vos compétences...">{{ old('bio') }}</textarea>
-            </div>
-
-            <!-- Téléphone -->
-            <div class="mt-6">
-                <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Téléphone</label>
-                <input type="text" name="telephone" value="{{ old('telephone') }}"
-                       class="w-full px-4 py-3 bg-white dark:bg-dark-700 border border-gray-300 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-accent-blue focus:border-transparent transition-all text-gray-900 dark:text-white"
-                       placeholder="+229 XX XX XX XX">
+        <!-- Documents Section -->
+        <div class="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-1">Documents</h2>
+                <p class="text-sm text-gray-600">Joignez vos documents justificatifs (optionnel - simulation)</p>
             </div>
 
             <!-- Photo de profil -->
-            <div class="mt-6">
-                <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-3">Photo de profil</label>
-                <div class="flex items-center gap-6">
-                    <template x-if="photoPreview">
-                        <img :src="photoPreview" class="w-24 h-24 rounded-full object-cover border-4 border-accent-blue shadow-lg">
-                    </template>
-                    <template x-if="!photoPreview">
-                        <div class="w-24 h-24 rounded-full bg-gray-200 dark:bg-dark-700 border-4 border-gray-300 dark:border-white/10 flex items-center justify-center">
-                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                        </div>
-                    </template>
+            <div class="mb-8">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">Photo de profil</label>
+                <div class="flex items-start gap-6">
+                    <div class="flex-shrink-0">
+                        <template x-if="photoPreview">
+                            <img :src="photoPreview" class="w-24 h-24 rounded-xl object-cover border-2 border-gray-200">
+                        </template>
+                        <template x-if="!photoPreview">
+                            <div class="w-24 h-24 rounded-xl bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
+                                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                            </div>
+                        </template>
+                    </div>
                     <div class="flex-1">
-                        <input type="file" name="photo" accept="image/*"
-                               @change="photoPreview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null"
-                               class="w-full px-4 py-3 bg-white dark:bg-dark-700 border border-gray-300 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-accent-blue transition-all text-gray-900 dark:text-white">
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">JPG, PNG ou GIF (Max 2 Mo)</p>
+                        <div class="relative">
+                            <input type="file" name="photo" accept="image/*" id="photo-input"
+                                   @change="photoPreview = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : null"
+                                   class="hidden">
+                            <label for="photo-input" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                Parcourir...
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Formats acceptés : JPG, PNG, GIF. Taille max : 2Mo</p>
+                        @error('photo')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Section 2: Documents (CV et autres) -->
-        <div class="glass-card rounded-2xl p-8 border border-white/10">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-                <span class="w-8 h-8 rounded-full bg-accent-blue text-white flex items-center justify-center text-sm font-bold">2</span>
-                Documents professionnels
-            </h2>
-
-            <!-- CV (Obligatoire) -->
+            <!-- CV / Resume -->
             <div class="mb-8">
                 <div class="flex items-center gap-2 mb-3">
-                    <label class="block text-sm font-semibold text-gray-900 dark:text-white">Curriculum Vitae (CV) *</label>
-                    <span class="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 text-xs font-semibold rounded">Obligatoire</span>
+                    <label class="block text-sm font-semibold text-gray-700">CV / Resume</label>
+                    <span x-show="!cvFile" class="px-2 py-0.5 bg-red-50 text-red-700 text-xs font-medium rounded">Aucun fichier sélectionné</span>
+                    <span x-show="cvFile" class="px-2 py-0.5 bg-green-50 text-green-700 text-xs font-medium rounded" x-cloak>Fichier sélectionné</span>
                 </div>
-                <div class="relative border-2 border-dashed border-gray-300 dark:border-white/10 rounded-xl p-8 text-center hover:border-accent-blue transition-colors cursor-pointer group">
-                    <input type="file" name="documents[cv]" accept=".pdf,.doc,.docx" required
-                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    <div class="pointer-events-none">
-                        <svg class="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-3 group-hover:text-accent-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                        </svg>
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white">Cliquez ou déposez votre CV</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">PDF, DOC ou DOCX (Max 5 Mo)</p>
+                <div class="relative border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-primary-500 transition-colors group cursor-pointer"
+                     @click="$refs.cvInput.click()">
+                    <input type="file" name="documents[cv]" accept=".pdf,.doc,.docx" 
+                           x-ref="cvInput"
+                           @change="cvFile = $event.target.files[0]"
+                           class="hidden">
+                    <div class="text-center pointer-events-none">
+                        <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary-50 transition-colors">
+                            <svg class="w-6 h-6 text-gray-400 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-medium text-gray-900 mb-1">
+                            <span x-show="!cvFile">Parcourir ou glisser-déposer</span>
+                            <span x-show="cvFile" x-text="cvFile ? cvFile.name : ''" class="text-primary-600" x-cloak></span>
+                        </p>
+                        <p class="text-xs text-gray-500">PDF, DOC. Taille max : 5Mo</p>
                     </div>
                 </div>
-                @error('documents.cv')<p class="text-red-500 text-sm mt-2">{{ $message }}</p>@enderror
+                <p class="text-xs text-gray-500 mt-2">Les documents sont optionnels mais aident à valider votre profil plus rapidement. Ils seront examinés par l'administration.</p>
+                @error('documents.cv')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
             </div>
 
-            <!-- Autres documents (Optionnel) -->
+            <!-- Autres documents -->
             <div>
-                <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-3">Documents supplémentaires</label>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Certificats, diplômes, lettres de recommandation, etc.</p>
-                <div class="relative border-2 border-dashed border-gray-300 dark:border-white/10 rounded-xl p-8 text-center hover:border-accent-blue transition-colors cursor-pointer group">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">Autres documents</label>
+                <div class="relative border-2 border-dashed border-gray-300 rounded-xl p-6 hover:border-primary-500 transition-colors group cursor-pointer"
+                     @click="$refs.otherInput.click()">
                     <input type="file" name="documents[other][]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple
-                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    <div class="pointer-events-none">
-                        <svg class="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-3 group-hover:text-accent-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                        </svg>
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white">Cliquez ou déposez vos documents</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">PDF, DOC, DOCX, JPG ou PNG (Max 5 Mo chacun)</p>
+                           x-ref="otherInput"
+                           @change="otherFiles = Array.from($event.target.files)"
+                           class="hidden">
+                    <div class="text-center pointer-events-none">
+                        <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3 group-hover:bg-primary-50 transition-colors">
+                            <svg class="w-6 h-6 text-gray-400 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-medium text-gray-900 mb-1">
+                            <span x-show="otherFiles.length === 0">Parcourir ou glisser-déposer</span>
+                            <span x-show="otherFiles.length > 0" x-text="`${otherFiles.length} fichier(s) sélectionné(s)`" class="text-primary-600" x-cloak></span>
+                        </p>
+                        <p class="text-xs text-gray-500">Certificats, diplômes, lettres de recommandation, etc.</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Section 3: Confirmation -->
-        <div class="glass-card rounded-2xl p-8 border border-white/10">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
-                <span class="w-8 h-8 rounded-full bg-accent-blue text-white flex items-center justify-center text-sm font-bold">3</span>
-                Confirmation
-            </h2>
+        <!-- Informations complémentaires -->
+        <div class="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Informations complémentaires</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Catégorie *</label>
+                    <select name="category_id" required class="input-modern">
+                        <option value="">Sélectionner une catégorie...</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('category_id')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+                </div>
 
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/50 rounded-xl p-4 mb-6">
-                <p class="text-sm text-blue-800 dark:text-blue-200">
-                    <strong>Veuillez noter :</strong> Votre profil sera soumis pour approbation par notre équipe d'administration. Vous recevrez une notification une fois votre profil validé ou rejeté.
-                </p>
-            </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Localisation *</label>
+                    <input type="text" name="localisation" value="{{ old('localisation') }}" required
+                           class="input-modern" placeholder="Ex: Cotonou, Porto-Novo">
+                    @error('localisation')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+                </div>
 
-            <div class="flex items-start gap-3 mb-6">
-                <input type="checkbox" id="agree" required class="w-5 h-5 rounded border-gray-300 dark:border-white/10 text-accent-blue focus:ring-accent-blue">
-                <label for="agree" class="text-sm text-gray-700 dark:text-gray-300">
-                    J'accepte que mes informations soient traitées conformément à notre politique de confidentialité et que mon profil soit visible dans l'annuaire une fois approuvé.
-                </label>
-            </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Secteur d'activité *</label>
+                    <input type="text" name="secteur_activite" value="{{ old('secteur_activite') }}" required
+                           class="input-modern" placeholder="Ex: Commerce, Artisanat, Services">
+                    @error('secteur_activite')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+                </div>
 
-            <!-- Buttons -->
-            <div class="flex gap-4">
-                <a href="{{ route('home') }}"
-                   class="flex-1 px-6 py-4 border border-gray-300 dark:border-white/10 rounded-xl hover:bg-gray-50 dark:hover:bg-dark-700 font-semibold text-gray-900 dark:text-white transition-all text-center">
-                    Annuler
-                </a>
-                <button type="submit"
-                        :disabled="loading"
-                        class="flex-1 px-6 py-4 rounded-xl bg-accent-blue hover:bg-accent-blue/90 text-white font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                    <span x-show="!loading">Soumettre mon profil</span>
-                    <span x-show="loading" class="flex items-center justify-center gap-2" x-cloak>
-                        <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Soumission en cours...
-                    </span>
-                </button>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Téléphone</label>
+                    <input type="text" name="telephone" value="{{ old('telephone') }}"
+                           class="input-modern" placeholder="+229 XX XX XX XX">
+                    @error('telephone')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Site web</label>
+                    <input type="url" name="site_web" value="{{ old('site_web') }}"
+                           class="input-modern" placeholder="https://...">
+                    @error('site_web')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Biographie</label>
+                    <textarea name="bio" rows="4" class="input-modern"
+                              placeholder="Présentez-vous en quelques mots...">{{ old('bio') }}</textarea>
+                    @error('bio')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Compétences</label>
+                    <textarea name="competences" rows="3" class="input-modern"
+                              placeholder="Listez vos compétences principales...">{{ old('competences') }}</textarea>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Expérience</label>
+                    <textarea name="experience" rows="3" class="input-modern"
+                              placeholder="Décrivez votre expérience professionnelle...">{{ old('experience') }}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Niveau d'étude</label>
+                    <select name="niveau_etude" class="input-modern">
+                        <option value="">Sélectionner...</option>
+                        <option value="bac" {{ old('niveau_etude') == 'bac' ? 'selected' : '' }}>Baccalauréat</option>
+                        <option value="licence" {{ old('niveau_etude') == 'licence' ? 'selected' : '' }}>Licence</option>
+                        <option value="master" {{ old('niveau_etude') == 'master' ? 'selected' : '' }}>Master</option>
+                        <option value="doctorat" {{ old('niveau_etude') == 'doctorat' ? 'selected' : '' }}>Doctorat</option>
+                        <option value="autre" {{ old('niveau_etude') == 'autre' ? 'selected' : '' }}>Autre</option>
+                    </select>
+                </div>
             </div>
+        </div>
+
+        <!-- Note importante -->
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <div class="flex gap-3">
+                <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                <div class="text-sm text-blue-800">
+                    <p class="font-medium mb-1">Validation du profil</p>
+                    <p>Les documents sont optionnels mais aident à valider votre profil plus rapidement. Ils seront examinés par l'administration.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-4">
+            <a href="{{ route('home') }}" class="flex-1 text-center px-6 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                Précédent
+            </a>
+            <button type="submit" :disabled="loading"
+                    class="flex-1 px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <span x-show="!loading">Suivant</span>
+                <span x-show="loading" class="flex items-center gap-2" x-cloak>
+                    <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Envoi...
+                </span>
+            </button>
         </div>
     </form>
 </div>

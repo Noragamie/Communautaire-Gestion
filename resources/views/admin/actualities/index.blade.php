@@ -4,10 +4,13 @@
 
 @section('content')
     <div class="flex items-center justify-between mb-8">
-        <h1 class="text-2xl font-bold text-gray-900">Actualités</h1>
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Actualités</h1>
+            <p class="text-gray-600 mt-1">Gérez les événements et actualités de la communauté</p>
+        </div>
         <a href="{{ route('admin.actualities.create') }}"
-           class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 font-medium transition-all flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+           class="bg-primary-600 text-white px-6 py-3 rounded-xl hover:bg-primary-700 font-semibold transition-all flex items-center gap-2 shadow-lg hover:shadow-xl">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
             Créer une actualité
@@ -15,15 +18,21 @@
     </div>
 
     @if($actualities->isEmpty())
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
-            <svg class="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
-            </svg>
-            <p class="text-gray-500 font-medium">Aucune actualité pour l'instant</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-20 text-center">
+            <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Aucune actualité pour l'instant</h3>
+            <p class="text-gray-600 mb-6">Commencez par créer votre première actualité</p>
             <a href="{{ route('admin.actualities.create') }}"
-               class="inline-block mt-4 text-indigo-600 hover:text-indigo-700 font-medium text-sm">
-                Créer la première actualité →
+               class="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-semibold">
+                Créer la première actualité
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                </svg>
             </a>
         </div>
     @else

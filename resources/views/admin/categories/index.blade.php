@@ -4,7 +4,7 @@
 
 @section('content')
     <div x-data="{ showDeleteModal: false, deleteId: null, deleteName: '' }">
-        <h1 class="text-2xl font-bold text-gray-900 mb-8">Gestion des catégories</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">Gestion des catégories</h1>
 
         <!-- Add Category Form -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-8" x-data="{ loading: false }">
@@ -16,21 +16,21 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nom *</label>
                         <input type="text" name="name" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                                placeholder="Ex: Artisans">
                         @error('name')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
                         <input type="text" name="description"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                               class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
                                placeholder="Description de la catégorie">
                         @error('description')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
                 </div>
                 <button type="submit"
                         :disabled="loading"
-                        class="bg-indigo-600 text-white px-8 py-3 rounded-xl hover:bg-indigo-700 font-medium transition-all disabled:opacity-50">
+                        class="bg-primary-600 text-white px-8 py-3 rounded-xl hover:bg-primary-700 font-semibold transition-all disabled:opacity-50 shadow-lg hover:shadow-xl">
                     <span x-show="!loading">Ajouter</span>
                     <span x-show="loading" x-cloak>Ajout...</span>
                 </button>
@@ -54,13 +54,13 @@
                             <td class="px-6 py-4 font-medium text-gray-900">{{ $cat->name }}</td>
                             <td class="px-6 py-4 text-gray-600">{{ $cat->description }}</td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-primary-100 text-primary-800">
                                     {{ $cat->profiles_count }}
                                 </span>
                             </td>
                             <td class="px-6 py-4">
                                 <button @click="showDeleteModal = true; deleteId = {{ $cat->id }}; deleteName = '{{ $cat->name }}'"
-                                        class="text-red-600 hover:text-red-700 font-medium text-sm">
+                                        class="text-red-600 hover:text-red-700 font-medium text-sm transition-colors">
                                     Supprimer
                                 </button>
                             </td>
@@ -89,7 +89,7 @@
                         @csrf
                         @method('DELETE')
                         <button type="submit"
-                                class="w-full px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all font-medium">
+                                class="w-full px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all font-semibold shadow-lg hover:shadow-xl">
                             Supprimer
                         </button>
                     </form>

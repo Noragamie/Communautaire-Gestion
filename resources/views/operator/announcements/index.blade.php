@@ -17,7 +17,7 @@
                     Les annonces sont réservées aux utilisateurs dont le profil a été approuvé.
                 </p>
                 <a href="{{ route('operator.profile.show') }}"
-                   class="inline-block mt-4 bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 font-medium text-sm transition-all">
+                   class="inline-block mt-4 bg-primary-600 text-white px-5 py-2.5 rounded-xl hover:bg-primary-700 font-medium text-sm transition-all">
                     Voir mon profil
                 </a>
             </div>

@@ -1,143 +1,241 @@
 @extends('layouts.app')
-
-@section('title', 'Mon Profil - The Collective')
+@section('title', 'Mon Profil - CommunePro')
 
 @section('content')
-<div class="max-w-5xl mx-auto space-y-8">
-    @if(!$profile)
-        <div class="glass-card p-20 rounded-[3rem] text-center">
-            <div class="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-            </div>
-            <h3 class="text-xl font-bold">Profil inexistant</h3>
-            <p class="text-gray-500 mt-2 mb-8">Vous n'avez pas encore créé de profil public sur The Collective.</p>
-            <a href="{{ route('operator.profile.create') }}" class="px-8 py-4 rounded-2xl bg-accent-blue text-white font-bold hover:bg-accent-blue/90 transition-all">Créer mon profil</a>
-        </div>
-    @else
-        <!-- Profile Header Card -->
-        <div class="glass-card rounded-[3rem] p-10 flex flex-col md:flex-row gap-10 items-center md:items-start relative overflow-hidden">
-            <div class="relative">
-                <div class="w-48 h-48 rounded-[2.5rem] overflow-hidden border-4 border-white/5">
-                    @if($profile->photo)
-                        <img src="{{ asset('storage/'.$profile->photo) }}" alt="{{ $profile->user->name }}" class="w-full h-full object-cover">
-                    @else
-                        <div class="w-full h-full bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center text-5xl font-bold">
-                            {{ substr($profile->user->name, 0, 1) }}
-                        </div>
+<div class="max-w-7xl mx-auto">
+    <!-- Header with gradient cover -->
+    <div class="bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl p-8 mb-6 shadow-lg">
+        <div class="flex items-center gap-6">
+            @if($profile->photo)
+                <img src="{{ asset('storage/'.$profile->photo) }}" 
+                     alt="{{ $profile->user->name }}" 
+                     class="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-lg">
+            @else
+                <div class="w-24 h-24 rounded-2xl bg-white flex items-center justify-center shadow-lg">
+                    <span class="text-4xl font-bold text-primary-600">
+                        {{ substr($profile->user->name, 0, 1) }}
+                    </span>
+                </div>
+            @endif
+            
+            <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                    <h1 class="text-3xl font-bold text-white">{{ $profile->user->name }}</h1>
+                    @if($profile->status === 'approved')
+                        <span class="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Vérifié
+                        </span>
                     @endif
                 </div>
-                <div class="absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-green-500 border-4 border-dark-900 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <p class="text-white/90 text-lg mb-1">{{ $profile->secteur_activite }}</p>
+                <div class="flex items-center gap-2 text-white/80 text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>{{ $profile->localisation }}</span>
                 </div>
             </div>
-
-            <div class="flex-1 space-y-6">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h1 class="text-4xl font-bold">{{ $profile->user->name }}</h1>
-                        <p class="text-accent-blue font-medium mt-1">{{ $profile->secteur_activite }} • {{ $profile->localisation }}</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <a href="{{ route('operator.profile.edit') }}" class="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-wider hover:bg-white/10 transition-all">Modifier le Profil</a>
-                        <button class="p-3 rounded-2xl bg-accent-blue text-white hover:bg-accent-blue/90 transition-all">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex gap-4">
-                    <span class="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-gray-400">Communauté vérifiée</span>
-                    <span class="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-gray-400">Membre Premium</span>
-                </div>
-
-                <p class="text-gray-400 leading-relaxed">
-                    {{ $profile->bio ?? "Aucune biographie renseignée pour le moment. Partagez votre parcours avec la communauté !" }}
-                </p>
-            </div>
-
-            <!-- Background Decoration -->
-            <div class="absolute top-0 right-0 w-64 h-64 bg-accent-blue/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+            
+            <a href="{{ route('operator.profile.edit') }}" 
+               class="px-6 py-3 bg-white text-primary-600 rounded-xl font-semibold hover:shadow-xl transition-all hover:scale-105">
+                Modifier mon profil
+            </a>
         </div>
+    </div>
 
-        <div class="grid grid-cols-3 gap-8">
-            <!-- Stats & Info -->
-            <div class="space-y-8">
-                <div class="glass-card p-8 rounded-[2.5rem] text-center">
-                    <p class="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Impact Score</p>
-                    <p class="text-5xl font-bold text-white">2,480</p>
-                    <p class="text-xs text-gray-500 mt-4 leading-relaxed">Top 5% des membres les plus actifs ce mois-ci.</p>
-                </div>
-
-                <div class="glass-card p-8 rounded-[2.5rem]">
-                    <h3 class="font-bold mb-6">Badges Récents</h3>
-                    <div class="flex flex-wrap gap-4">
-                        <div class="w-12 h-12 rounded-2xl bg-accent-blue/20 flex items-center justify-center text-accent-blue" title="Early Adopter">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
-                        </div>
-                        <div class="w-12 h-12 rounded-2xl bg-accent-purple/20 flex items-center justify-center text-accent-purple" title="Speaker">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-                        </div>
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-500" title="Helper">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                        </div>
-                    </div>
-                </div>
+    <!-- Status Alerts -->
+    @if($profile->status === 'pending')
+        <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center gap-3">
+            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <p class="font-semibold text-yellow-900">Profil en attente de validation</p>
+                <p class="text-sm text-yellow-700">Votre profil est en cours de vérification par notre équipe.</p>
             </div>
-
-            <!-- Activity Feed -->
-            <div class="col-span-2 space-y-8">
-                <div class="glass-card p-8 rounded-[2.5rem]">
-                    <div class="flex justify-between items-center mb-8">
-                        <h3 class="font-bold">Activités Récentes</h3>
-                        <button class="text-xs text-accent-blue font-bold uppercase tracking-wider">Voir Tout</button>
-                    </div>
-
-                    <div class="space-y-8 relative before:absolute before:inset-0 before:left-[19px] before:w-px before:bg-white/5">
-                        <div class="relative flex gap-6 items-start">
-                            <div class="w-10 h-10 rounded-full bg-accent-blue flex items-center justify-center z-10">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-sm font-bold">Photo de profil mise à jour</p>
-                                <p class="text-xs text-gray-500 mt-1">Il y a 2 jours • Dans Paramètres</p>
-                            </div>
-                        </div>
-
-                        <div class="relative flex gap-6 items-start">
-                            <div class="w-10 h-10 rounded-full bg-accent-purple flex items-center justify-center z-10">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
-                            </div>
-                            <div>
-                                <p class="text-sm font-bold">Nouvelle discussion lancée</p>
-                                <p class="text-xs text-gray-500 mt-1">"L'avenir de l'IA décentralisée" • Il y a 4 jours</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Settings Shortcuts -->
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="glass-card p-6 rounded-3xl flex items-center gap-4 hover:bg-white/5 transition-all cursor-pointer">
-                        <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-bold">Système</p>
-                            <p class="text-[10px] text-gray-500 uppercase tracking-wider">Apparence</p>
-                        </div>
-                    </div>
-                    <div class="glass-card p-6 rounded-3xl flex items-center gap-4 hover:bg-white/5 transition-all cursor-pointer">
-                        <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-gray-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                        </div>
-                        <div>
-                            <p class="text-sm font-bold">Confidentialité</p>
-                            <p class="text-[10px] text-gray-500 uppercase tracking-wider">Sécurité</p>
-                        </div>
-                    </div>
-                </div>
+        </div>
+    @elseif($profile->status === 'rejected')
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+            <svg class="w-6 h-6 text-red-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <p class="font-semibold text-red-900">Profil refusé</p>
+                @if($profile->rejection_reason)
+                    <p class="text-sm text-red-700 mt-1">Raison : {{ $profile->rejection_reason }}</p>
+                @endif
+                <p class="text-sm text-red-700 mt-2">Veuillez modifier votre profil et le soumettre à nouveau.</p>
             </div>
         </div>
     @endif
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- About Section -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    À propos
+                </h2>
+                <p class="text-gray-700 leading-relaxed">{{ $profile->description ?? 'Aucune description disponible.' }}</p>
+            </div>
+
+            <!-- Category -->
+            @if($profile->category)
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                    </svg>
+                    Catégorie
+                </h2>
+                <span class="inline-block px-4 py-2 bg-primary-50 text-primary-700 rounded-lg font-medium">
+                    {{ $profile->category->name }}
+                </span>
+            </div>
+            @endif
+
+            <!-- Documents -->
+            @if($profile->documents->count() > 0)
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Documents
+                </h2>
+                <div class="space-y-3">
+                    @foreach($profile->documents as $document)
+                        <a href="{{ asset('storage/'.$document->file_path) }}" 
+                           target="_blank"
+                           class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">{{ $document->type }}</p>
+                                    <p class="text-sm text-gray-500">{{ basename($document->file_path) }}</p>
+                                </div>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                            </svg>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Contact Info -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    Contact
+                </h2>
+                <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">Email</p>
+                            <p class="text-gray-900">{{ $profile->user->email }}</p>
+                        </div>
+                    </div>
+                    
+                    @if($profile->telephone)
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                        </svg>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">Téléphone</p>
+                            <p class="text-gray-900">{{ $profile->telephone }}</p>
+                        </div>
+                    </div>
+                    @endif
+                    
+                    @if($profile->site_web)
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                        </svg>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">Site web</p>
+                            <a href="{{ $profile->site_web }}" target="_blank" class="text-primary-600 hover:text-primary-700 break-all">
+                                {{ $profile->site_web }}
+                            </a>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">Actions rapides</h2>
+                <div class="space-y-2">
+                    <a href="{{ route('operator.profile.edit') }}" 
+                       class="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl hover:bg-primary-50 hover:text-primary-700 transition-colors group">
+                        <svg class="w-5 h-5 text-gray-400 group-hover:text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        <span class="font-medium">Modifier le profil</span>
+                    </a>
+                    
+                    <a href="{{ route('operator.announcements.index') }}" 
+                       class="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl hover:bg-primary-50 hover:text-primary-700 transition-colors group">
+                        <svg class="w-5 h-5 text-gray-400 group-hover:text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+                        </svg>
+                        <span class="font-medium">Mes annonces</span>
+                    </a>
+                    
+                    <a href="{{ route('profiles.show', $profile) }}" 
+                       class="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl hover:bg-primary-50 hover:text-primary-700 transition-colors group">
+                        <svg class="w-5 h-5 text-gray-400 group-hover:text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        <span class="font-medium">Voir profil public</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl p-6 text-white shadow-lg">
+                <h2 class="text-lg font-bold mb-4">Statistiques</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-white/80">Vues du profil</span>
+                        <span class="text-2xl font-bold">{{ $profile->views ?? 0 }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-white/80">Annonces actives</span>
+                        <span class="text-2xl font-bold">{{ $profile->announcements->where('status', 'active')->count() }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-white/80">Membre depuis</span>
+                        <span class="font-semibold">{{ $profile->created_at->format('M Y') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

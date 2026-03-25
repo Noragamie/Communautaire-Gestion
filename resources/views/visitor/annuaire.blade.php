@@ -1,59 +1,68 @@
-@extends('layouts.app')
-
-@section('title', 'Annuaire des membres - The Collective')
+@extends('layouts.guest')
+@section('title', 'Annuaire des membres - CommunePro')
 
 @section('content')
-<div class="space-y-8">
-    <div class="flex justify-between items-end">
-        <div>
-            <h1 class="text-3xl font-bold">Annuaire des membres</h1>
-            <p class="text-gray-500 mt-1">Connectez-vous avec les esprits créatifs et techniques de la communauté.</p>
+<section class="py-12 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Annuaire des membres</h1>
+            <p class="text-gray-600">Connectez-vous avec les esprits créatifs et techniques de la communauté.</p>
         </div>
-        <div class="flex gap-2">
-            <button class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-bold hover:bg-white/10 transition-all">Tous</button>
-            <button class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-bold hover:bg-white/10 transition-all">Design</button>
-            <button class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-bold hover:bg-white/10 transition-all">Engineering</button>
-            <button class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-bold hover:bg-white/10 transition-all">Strategy</button>
-        </div>
-    </div>
 
-    <div class="grid grid-cols-4 gap-6">
-        @foreach($categories as $category)
-            @php 
-                // Simulation de membres pour le design (dans un vrai cas on bouclerait sur les profils)
-                $colors = ['bg-accent-blue', 'bg-accent-purple', 'bg-emerald-500', 'bg-orange-500'];
-                $color = $colors[$loop->index % count($colors)];
-            @endphp
-            <div class="glass-card p-6 rounded-[2rem] text-center group hover:border-accent-blue/30 transition-all cursor-pointer">
-                <div class="relative inline-block mb-4">
-                    <div class="w-20 h-20 rounded-[1.5rem] {{ $color }}/20 flex items-center justify-center text-2xl font-bold {{ str_replace('bg-', 'text-', $color) }}">
-                        {{ substr($category->name, 0, 1) }}
+        <!-- Filters -->
+        <div class="mb-8 flex flex-wrap gap-3">
+            <a href="{{ route('annuaire') }}" class="px-4 py-2 rounded-lg {{ !request('category') ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }} text-sm font-medium transition-colors">
+                Tous
+            </a>
+            @foreach($categories as $cat)
+                <a href="{{ route('annuaire', ['category' => $cat->id]) }}" 
+                   class="px-4 py-2 rounded-lg {{ request('category') == $cat->id ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }} text-sm font-medium transition-colors">
+                    {{ $cat->name }}
+                </a>
+            @endforeach
+        </div>
+
+        <!-- Categories Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            @foreach($categories as $category)
+                @php 
+                    $colors = [
+                        'from-blue-500 to-blue-600',
+                        'from-purple-500 to-purple-600',
+                        'from-green-500 to-green-600',
+                        'from-orange-500 to-orange-600',
+                        'from-pink-500 to-pink-600',
+                        'from-indigo-500 to-indigo-600',
+                    ];
+                    $color = $colors[$loop->index % count($colors)];
+                @endphp
+                <div class="bg-white border border-gray-200 rounded-2xl p-6 text-center hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="relative inline-block mb-4">
+                        <div class="w-20 h-20 rounded-2xl bg-gradient-to-br {{ $color }} flex items-center justify-center text-2xl font-bold text-white">
+                            {{ substr($category->name, 0, 1) }}
+                        </div>
+                        <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center">
+                            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                        </div>
                     </div>
-                    <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-dark-900 border-2 border-white/10 flex items-center justify-center">
-                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                    <h3 class="font-bold text-lg text-gray-900">{{ $category->name }}</h3>
+                    <p class="text-xs text-gray-500 mt-1">{{ $category->profiles_count }} Membres actifs</p>
+                    
+                    <div class="mt-6 flex gap-2">
+                        <a href="{{ route('category.show', $category) }}" 
+                           class="flex-1 py-2 rounded-lg bg-primary-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-primary-700 transition-all">
+                            Voir Profils
+                        </a>
+                        <button class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-all">
+                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
-                <h3 class="font-bold text-lg">{{ $category->name }}</h3>
-                <p class="text-xs text-gray-500 mt-1">{{ $category->profiles_count }} Membres actifs</p>
-                
-                <div class="mt-6 flex gap-2">
-                    <a href="{{ route('category.show', $category) }}" class="flex-1 py-2 rounded-xl bg-accent-blue text-white text-[10px] font-bold uppercase tracking-wider hover:bg-accent-blue/90 transition-all">Voir Profils</a>
-                    <button class="p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
-                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-                    </button>
-                </div>
-            </div>
-        @endforeach
-
-        <!-- Placeholder pour inviter -->
-        <div class="glass-card p-6 rounded-[2rem] border-dashed border-white/10 flex flex-col items-center justify-center text-center">
-            <div class="w-16 h-16 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center text-gray-500 mb-4">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-            </div>
-            <p class="text-sm font-bold text-gray-400">Vous ne trouvez pas qui vous cherchez ?</p>
-            <p class="text-[10px] text-gray-600 mt-1">Essayez d'élargir vos filtres ou invitez un nouveau membre.</p>
-            <button class="mt-6 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 transition-all">Inviter un membre</button>
+            @endforeach
         </div>
     </div>
-</div>
+</section>
 @endsection

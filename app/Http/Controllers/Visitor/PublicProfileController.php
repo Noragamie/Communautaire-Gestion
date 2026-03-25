@@ -53,10 +53,34 @@ class PublicProfileController extends Controller
         return view('visitor.category', compact('category','profiles'));
     }
 
-    public function actualities()
+    public function actualities(Request $request)
     {
-        $actualities = Actuality::published()->paginate(10);
-        return view('visitor.actualities', compact('actualities'));
+        $query = Actuality::published();
+        
+        // Filter by month if provided
+        if ($request->filled('month')) {
+            // SQLite uses strftime instead of DATE_FORMAT
+            $query->whereRaw("strftime('%Y-%m', published_at) = ?", [$request->month]);
+        }
+        
+        $actualities = $query->paginate(10);
+        
+        // Generate dynamic months from actualities - SQLite compatible
+        $months = Actuality::published()
+            ->selectRaw("strftime('%Y-%m', published_at) as month")
+            ->groupBy('month')
+            ->orderBy('month', 'desc')
+            ->pluck('month')
+            ->filter()
+            ->map(function($month) {
+                $date = \Carbon\Carbon::createFromFormat('Y-m', $month);
+                return [
+                    'value' => $month,
+                    'label' => $date->translatedFormat('F Y')
+                ];
+            });
+        
+        return view('visitor.actualities', compact('actualities', 'months'));
     }
 
     public function subscribeNewsletter(Request $request)
