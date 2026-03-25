@@ -9,6 +9,9 @@ use App\Mail\ProfileSubmittedMail;
 use App\Models\Document;
 use App\Models\Profile;
 use App\Models\User;
+use App\Notifications\NewProfileSubmitted;
+use App\Notifications\ProfileApproved;
+use App\Notifications\ProfileRejected;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -58,7 +61,10 @@ class ProfileService
 
             $admins = User::where('role', 'admin')->get();
             foreach ($admins as $admin) {
-                Mail::to($admin->email)->queue(new AdminNewProfileMail($profile));
+                if ($admin->notify_new_profile) {
+                    Mail::to($admin->email)->queue(new AdminNewProfileMail($profile));
+                }
+                $admin->notify(new NewProfileSubmitted($profile));
             }
 
             return $profile;
@@ -69,12 +75,14 @@ class ProfileService
     {
         $profile->update(['status' => 'approved', 'motif_rejet' => null]);
         Mail::to($profile->user->email)->queue(new ProfileApprovedMail($profile));
+        $profile->user->notify(new ProfileApproved($profile));
     }
 
     public function reject(Profile $profile, string $motif): void
     {
         $profile->update(['status' => 'rejected', 'motif_rejet' => $motif]);
         Mail::to($profile->user->email)->queue(new ProfileRejectedMail($profile, $motif));
+        $profile->user->notify(new ProfileRejected($profile, $motif));
     }
 
     public function suspend(Profile $profile): void

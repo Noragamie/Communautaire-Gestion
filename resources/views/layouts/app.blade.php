@@ -6,6 +6,7 @@
     <title>@yield('title', 'Gestion Communautaire')</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>[x-cloak] { display: none !important; }</style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -39,6 +40,71 @@
                             <a href="{{ route('operator.profile.show') }}" class="text-sm text-gray-600 hover:text-gray-900 font-medium">
                                 Mon profil
                             </a>
+                            <a href="{{ route('operator.announcements.index') }}" class="text-sm text-gray-600 hover:text-gray-900 font-medium">
+                                Annonces
+                            </a>
+                            @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
+                            <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                                <button @click="open = !open"
+                                        class="relative p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-all">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                    </svg>
+                                    @if($unreadCount > 0)
+                                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                            {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                                        </span>
+                                    @endif
+                                </button>
+
+                                <div x-show="open"
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="opacity-100 scale-100"
+                                     x-transition:leave-end="opacity-0 scale-95"
+                                     class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden">
+                                    @php $notifications = auth()->user()->notifications()->latest()->take(6)->get(); @endphp
+
+                                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                                        <span class="font-semibold text-sm text-gray-900">Notifications</span>
+                                        @if($unreadCount > 0)
+                                            <form method="POST" action="{{ route('notifications.read-all') }}">
+                                                @csrf
+                                                <button type="submit" class="text-xs text-indigo-600 hover:text-indigo-700 font-medium">
+                                                    Tout marquer comme lu
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+
+                                    @if($notifications->isEmpty())
+                                        <div class="px-4 py-8 text-center text-sm text-gray-400">
+                                            Aucune notification
+                                        </div>
+                                    @else
+                                        <div class="divide-y divide-gray-50">
+                                            @foreach($notifications as $notif)
+                                                <a href="{{ route('notifications.read', $notif->id) }}"
+                                                   class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors
+                                                          {{ is_null($notif->read_at) ? 'bg-indigo-50/40' : '' }}">
+                                                    <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0
+                                                                {{ is_null($notif->read_at) ? 'bg-indigo-500' : 'bg-gray-300' }}"></div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm text-gray-800 leading-snug">{{ $notif->data['message'] }}</p>
+                                                        @if(!empty($notif->data['motif']))
+                                                            <p class="text-xs text-gray-500 mt-0.5 truncate">{{ $notif->data['motif'] }}</p>
+                                                        @endif
+                                                        <p class="text-xs text-gray-400 mt-1">{{ $notif->created_at->diffForHumans() }}</p>
+                                                    </div>
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
                         @endif
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
