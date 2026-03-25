@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Visitor;
 
 use App\Http\Controllers\Controller;
+use App\Mail\WelcomeNewsletterMail;
 use App\Models\Actuality;
 use App\Models\Category;
 use App\Models\Newsletter;
 use App\Models\Profile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class PublicProfileController extends Controller
 {
@@ -69,7 +71,22 @@ class PublicProfileController extends Controller
         ]);
 
         try {
-            Newsletter::firstOrCreate(['email' => $request->email], ['subscribed' => true]);
+            $subscriber = Newsletter::firstOrCreate(
+                ['email' => $request->email],
+                ['subscribed' => true]
+            );
+
+            $justSubscribed = $subscriber->wasRecentlyCreated;
+
+            if (!$subscriber->wasRecentlyCreated && !$subscriber->subscribed) {
+                $subscriber->update(['subscribed' => true]);
+                $justSubscribed = true;
+            }
+
+            if ($justSubscribed) {
+                Mail::to($subscriber->email)->send(new WelcomeNewsletterMail($subscriber->token));
+            }
+
             return back()->with('success', 'Vous êtes abonné à la newsletter.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de l\'abonnement.']);

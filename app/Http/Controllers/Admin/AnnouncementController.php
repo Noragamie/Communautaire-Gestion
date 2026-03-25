@@ -3,9 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AnnouncementMail;
 use App\Models\Announcement;
+use App\Models\User;
+use App\Notifications\AnnouncementPublished;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 class AnnouncementController extends Controller
@@ -46,9 +51,13 @@ class AnnouncementController extends Controller
                 $data['image'] = $request->file('image')->store('announcements', 'public');
             }
 
-            Announcement::create($data);
+            $announcement = Announcement::create($data);
 
-            $message = $publish ? 'Annonce publiée.' : 'Annonce enregistrée comme brouillon.';
+            if ($publish) {
+                $this->notifyValidatedUsers($announcement);
+            }
+
+            $message = $publish ? 'Annonce publiée et utilisateurs notifiés.' : 'Annonce enregistrée comme brouillon.';
             return redirect()->route('admin.announcements.index')->with('success', $message);
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la création de l\'annonce.'])->withInput();
@@ -74,6 +83,7 @@ class AnnouncementController extends Controller
         ]);
 
         try {
+            $wasPublished = $announcement->is_published;
             $publish = $request->input('action') === 'publish';
 
             $data = $request->only('title', 'content');
@@ -88,6 +98,10 @@ class AnnouncementController extends Controller
             }
 
             $announcement->update($data);
+
+            if ($publish && !$wasPublished) {
+                $this->notifyValidatedUsers($announcement);
+            }
 
             $message = $publish ? 'Annonce publiée.' : 'Brouillon enregistré.';
             return redirect()->route('admin.announcements.index')->with('success', $message);
@@ -107,5 +121,16 @@ class AnnouncementController extends Controller
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la suppression.']);
         }
+    }
+
+    private function notifyValidatedUsers(Announcement $announcement): void
+    {
+        $users = User::where('is_active', true)->get();
+
+        foreach ($users as $user) {
+            Mail::to($user->email)->send(new AnnouncementMail($announcement));
+        }
+
+        Notification::send($users, new AnnouncementPublished($announcement));
     }
 }
