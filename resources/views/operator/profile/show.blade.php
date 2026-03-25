@@ -54,7 +54,7 @@
                     {{ $profile->bio ?? "Aucune biographie renseignée pour le moment. Partagez votre parcours avec la communauté !" }}
                 </p>
             </div>
-            
+
             <!-- Background Decoration -->
             <div class="absolute top-0 right-0 w-64 h-64 bg-accent-blue/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
         </div>
@@ -91,7 +91,7 @@
                         <h3 class="font-bold">Activités Récentes</h3>
                         <button class="text-xs text-accent-blue font-bold uppercase tracking-wider">Voir Tout</button>
                     </div>
-                    
+
                     <div class="space-y-8 relative before:absolute before:inset-0 before:left-[19px] before:w-px before:bg-white/5">
                         <div class="relative flex gap-6 items-start">
                             <div class="w-10 h-10 rounded-full bg-accent-blue flex items-center justify-center z-10">

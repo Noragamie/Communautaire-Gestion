@@ -59,6 +59,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     Route::post('/profils/{profile}/approuver', [AdminProfileController::class, 'approve'])->name('profiles.approve');
     Route::post('/profils/{profile}/rejeter', [AdminProfileController::class, 'reject'])->name('profiles.reject');
     Route::post('/profils/{profile}/suspendre', [AdminProfileController::class, 'suspend'])->name('profiles.suspend');
+    Route::post('/profils/{profile}/exporter-documents', [AdminProfileController::class, 'exportDocuments'])->name('profiles.export-documents');
     Route::delete('/profils/{profile}', [AdminProfileController::class, 'destroy'])->name('profiles.destroy');
 
     // Catégories

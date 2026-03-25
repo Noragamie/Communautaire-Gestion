@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Profile;
 use App\Services\ProfileService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use ZipArchive;
 
 class AdminProfileController extends Controller
 {
@@ -79,6 +81,49 @@ class AdminProfileController extends Controller
             return redirect()->route('admin.profiles.index')->with('success', 'Profil supprimé.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la suppression du profil.']);
+        }
+    }
+
+    public function exportDocuments(Profile $profile)
+    {
+        try {
+            $documents = $profile->documents;
+
+            if ($documents->isEmpty()) {
+                return back()->withErrors(['error' => 'Aucun document à télécharger.']);
+            }
+
+            // Si un seul document, le télécharger directement
+            if ($documents->count() === 1) {
+                $doc = $documents->first();
+                return Storage::disk('public')->download($doc->path, $doc->original_name);
+            }
+
+            // Créer une archive ZIP avec tous les documents
+            $zip = new ZipArchive();
+            $zipPath = storage_path('app/public/exports/' . uniqid() . '.zip');
+
+            // Créer le répertoire s'il n'existe pas
+            if (!is_dir(dirname($zipPath))) {
+                mkdir(dirname($zipPath), 0755, true);
+            }
+
+            if ($zip->open($zipPath, ZipArchive::CREATE) === true) {
+                foreach ($documents as $doc) {
+                    $filePath = Storage::disk('public')->path($doc->path);
+                    if (file_exists($filePath)) {
+                        $zip->addFile($filePath, $doc->original_name);
+                    }
+                }
+                $zip->close();
+
+                return response()->download($zipPath, $profile->user->name . '_documents.zip')
+                    ->deleteFileAfterSend(true);
+            }
+
+            return back()->withErrors(['error' => 'Erreur lors de la création de l\'archive.']);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Erreur lors de l\'export des documents: ' . $e->getMessage()]);
         }
     }
 }

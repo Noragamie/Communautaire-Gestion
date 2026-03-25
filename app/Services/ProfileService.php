@@ -43,12 +43,32 @@ class ProfileService
                 $profile->update(['photo' => $path]);
             }
 
-            if ($request->hasFile('documents')) {
-                foreach ($request->file('documents') as $type => $file) {
-                    $path = $file->store('documents', 'public');
+            // Supprimer les anciens documents lors d'une resoumission
+            if ($profile->wasRecentlyCreated === false) {
+                $profile->documents()->delete();
+            }
+
+            // Traiter le CV (obligatoire)
+            if ($request->hasFile('documents.cv')) {
+                $file = $request->file('documents.cv');
+                $path = $file->store('documents/cv', 'public');
+                Document::create([
+                    'profile_id'    => $profile->id,
+                    'type'          => 'cv',
+                    'path'          => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'mime_type'     => $file->getMimeType(),
+                    'size'          => $file->getSize(),
+                ]);
+            }
+
+            // Traiter les autres documents (optionnels)
+            if ($request->hasFile('documents.other')) {
+                foreach ($request->file('documents.other') as $file) {
+                    $path = $file->store('documents/other', 'public');
                     Document::create([
                         'profile_id'    => $profile->id,
-                        'type'          => $type,
+                        'type'          => 'autre',
                         'path'          => $path,
                         'original_name' => $file->getClientOriginalName(),
                         'mime_type'     => $file->getMimeType(),
