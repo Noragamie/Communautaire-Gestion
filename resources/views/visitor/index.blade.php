@@ -18,9 +18,21 @@
                     Développez votre réseau, trouvez des opportunités et faites grandir votre activité.
                 </p>
                 <div class="flex flex-wrap gap-4">
-                    <a href="{{ route('register') }}" class="px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all hover:shadow-lg hover:scale-105">
-                        Créer mon profil
-                    </a>
+                    @auth
+                        @if(auth()->user()->isOperateur() && auth()->user()->profile)
+                            <a href="{{ route('operator.profile.show') }}" class="px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all hover:shadow-lg hover:scale-105">
+                                Mon profil
+                            </a>
+                        @elseif(auth()->user()->isOperateur())
+                            <a href="{{ route('operator.profile.create') }}" class="px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all hover:shadow-lg hover:scale-105">
+                                Créer mon profil
+                            </a>
+                        @endif
+                    @else
+                        <a href="{{ route('register') }}" class="px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all hover:shadow-lg hover:scale-105">
+                            Créer mon profil
+                        </a>
+                    @endauth
                     <a href="{{ route('annuaire') }}" class="px-8 py-4 bg-white border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-primary-600 hover:text-primary-600 transition-all">
                         Explorer l'annuaire
                     </a>
@@ -232,13 +244,33 @@
 <!-- CTA Section -->
 <section class="py-20 bg-gradient-to-br from-primary-600 to-accent-600">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-4xl font-bold text-white mb-6">Prêt à rejoindre la communauté ?</h2>
-        <p class="text-xl text-white/90 mb-8">
-            Créez votre profil en quelques minutes et commencez à développer votre réseau professionnel.
-        </p>
-        <a href="{{ route('register') }}" class="inline-block px-8 py-4 bg-white text-primary-600 rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105">
-            Créer mon compte gratuitement
-        </a>
+        @auth
+            @if(auth()->user()->isOperateur() && auth()->user()->profile)
+                <h2 class="text-4xl font-bold text-white mb-6">Développez votre réseau</h2>
+                <p class="text-xl text-white/90 mb-8">
+                    Explorez l'annuaire et connectez-vous avec d'autres professionnels de votre commune.
+                </p>
+                <a href="{{ route('annuaire') }}" class="inline-block px-8 py-4 bg-white text-primary-600 rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105">
+                    Explorer l'annuaire
+                </a>
+            @elseif(auth()->user()->isOperateur())
+                <h2 class="text-4xl font-bold text-white mb-6">Complétez votre profil</h2>
+                <p class="text-xl text-white/90 mb-8">
+                    Créez votre profil professionnel pour rejoindre la communauté.
+                </p>
+                <a href="{{ route('operator.profile.create') }}" class="inline-block px-8 py-4 bg-white text-primary-600 rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105">
+                    Créer mon profil
+                </a>
+            @endif
+        @else
+            <h2 class="text-4xl font-bold text-white mb-6">Prêt à rejoindre la communauté ?</h2>
+            <p class="text-xl text-white/90 mb-8">
+                Créez votre profil en quelques minutes et commencez à développer votre réseau professionnel.
+            </p>
+            <a href="{{ route('register') }}" class="inline-block px-8 py-4 bg-white text-primary-600 rounded-xl font-semibold hover:shadow-2xl transition-all hover:scale-105">
+                Créer mon compte gratuitement
+            </a>
+        @endauth
     </div>
 </section>
 @endsection

@@ -5,12 +5,12 @@
 <div class="max-w-4xl mx-auto">
     <!-- Header -->
     <div class="mb-8 text-center">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Inscription</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Mon Profile</h1>
         <p class="text-gray-600">Rejoignez la communauté des acteurs économiques de la commune</p>
     </div>
 
     <!-- Progress Steps -->
-    <div class="mb-8 flex items-center justify-center gap-4">
+    <div class="mb-8 flex items-center justify-center gap-4" x-data="{ currentStep: 3 }">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
@@ -29,10 +29,11 @@
             <div class="w-8 h-8 rounded-full bg-primary-600 text-white flex items-center justify-center text-sm font-bold">3</div>
             <span class="text-sm font-medium text-primary-600">Documents</span>
         </div>
-        <div class="w-12 h-0.5 bg-gray-300"></div>
+        <div class="w-12 h-0.5" :class="currentStep >= 4 ? 'bg-primary-600' : 'bg-gray-300'"></div>
         <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-sm font-bold">4</div>
-            <span class="text-sm font-medium text-gray-500">Récapitulatif</span>
+            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                 :class="currentStep >= 4 ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-500'">4</div>
+            <span class="text-sm font-medium" :class="currentStep >= 4 ? 'text-primary-600' : 'text-gray-500'">Récapitulatif</span>
         </div>
     </div>
 
@@ -41,9 +42,10 @@
               loading: false, 
               photoPreview: null,
               cvFile: null,
-              otherFiles: []
+              otherFiles: [],
+              currentStep: 3
           }" 
-          @submit="loading = true" 
+          @submit.prevent="if(currentStep === 4) { loading = true; $el.submit(); }"
           class="space-y-6">
         @csrf
 
@@ -180,13 +182,6 @@
                     @error('telephone')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                 </div>
 
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Site web</label>
-                    <input type="url" name="site_web" value="{{ old('site_web') }}"
-                           class="input-modern" placeholder="https://...">
-                    @error('site_web')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
-                </div>
-
                 <div class="md:col-span-2">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Biographie</label>
                     <textarea name="bio" rows="4" class="input-modern"
@@ -233,14 +228,77 @@
             </div>
         </div>
 
+        <!-- Documents Section -->
+        <div x-show="currentStep === 3" class="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
+            <!-- Le contenu des documents reste ici -->
+        </div>
+
+        <!-- Récapitulatif Section -->
+        <div x-show="currentStep === 4" class="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
+            <div class="mb-6">
+                <h2 class="text-xl font-bold text-gray-900 mb-1">Récapitulatif</h2>
+                <p class="text-sm text-gray-600">Vérifiez vos informations avant de soumettre</p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">Informations personnelles</h3>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500">Localisation:</span>
+                            <span class="text-gray-900 font-medium ml-2" x-text="document.querySelector('[name=localisation]')?.value || 'Non renseigné'"></span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Téléphone:</span>
+                            <span class="text-gray-900 font-medium ml-2" x-text="document.querySelector('[name=telephone]')?.value || 'Non renseigné'"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">Informations professionnelles</h3>
+                    <div class="space-y-2 text-sm">
+                        <div>
+                            <span class="text-gray-500">Secteur d'activité:</span>
+                            <span class="text-gray-900 font-medium ml-2" x-text="document.querySelector('[name=secteur_activite]')?.value || 'Non renseigné'"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="font-semibold text-gray-900 mb-4">Documents</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20" x-show="cvFile">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-500">CV:</span>
+                            <span class="text-gray-900 font-medium ml-2" x-text="cvFile ? cvFile.name : 'Non fourni'"></span>
+                        </div>
+                        <div class="flex items-center gap-2" x-show="photoPreview">
+                            <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span class="text-gray-500">Photo de profil fournie</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Buttons -->
         <div class="flex gap-4">
-            <a href="{{ route('home') }}" class="flex-1 text-center px-6 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            <button type="button" @click="currentStep = Math.max(3, currentStep - 1)"
+                    class="flex-1 text-center px-6 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors">
                 Précédent
-            </a>
-            <button type="submit" :disabled="loading"
-                    class="flex-1 px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                <span x-show="!loading">Suivant</span>
+            </button>
+            <button type="button" @click="currentStep = 4" x-show="currentStep === 3"
+                    class="flex-1 px-6 py-3 bg-primary-600 text-white rounded-xl font-medium hover:bg-primary-700 transition-colors">
+                Suivant
+            </button>
+            <button type="submit" :disabled="loading" x-show="currentStep === 4"
+                    class="flex-1 px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <span x-show="!loading">Soumettre mon profil</span>
                 <span x-show="loading" class="flex items-center gap-2" x-cloak>
                     <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

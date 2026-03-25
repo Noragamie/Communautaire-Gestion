@@ -102,47 +102,6 @@
             </div>
             @endif
 
-            <!-- Documents -->
-            @if($profile->documents->count() > 0)
-            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    Documents
-                </h2>
-                <div class="space-y-3">
-                    @foreach($profile->documents as $document)
-                        <a href="{{ asset('storage/'.$document->file_path) }}" 
-                           target="_blank"
-                           class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-gray-900">{{ $document->type }}</p>
-                                    <p class="text-sm text-gray-500">{{ basename($document->file_path) }}</p>
-                                </div>
-                            </div>
-                            <svg class="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                            </svg>
-                        </a>
-                    @endforeach
-                </div>
-            </div>
-            @endif
-        </div>
-
-        <!-- Sidebar -->
-        <div class="space-y-6">
-            <!-- Contact Info -->
-            <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-                <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
                     Contact
@@ -218,24 +177,5 @@
             </div>
 
             <!-- Stats -->
-            <div class="bg-gradient-to-br from-primary-500 to-accent-500 rounded-2xl p-6 text-white shadow-lg">
-                <h2 class="text-lg font-bold mb-4">Statistiques</h2>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-white/80">Vues du profil</span>
-                        <span class="text-2xl font-bold">{{ $profile->views ?? 0 }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-white/80">Annonces actives</span>
-                        <span class="text-2xl font-bold">{{ $profile->announcements->where('status', 'active')->count() }}</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-white/80">Membre depuis</span>
-                        <span class="font-semibold">{{ $profile->created_at->format('M Y') }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 @endsection

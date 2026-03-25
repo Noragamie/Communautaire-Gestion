@@ -40,12 +40,67 @@
                 <nav class="hidden md:flex items-center gap-8">
                     <a href="{{ route('home') }}" class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">Accueil</a>
                     <a href="{{ route('annuaire') }}" class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">Annuaire</a>
+                    @auth
+                        @if(auth()->user()->isOperateur())
+                            <a href="{{ route('operator.announcements.index') }}" class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">Annonces</a>
+                        @endif
+                    @endauth
                     <a href="{{ route('actualities') }}" class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">Actualités</a>
+                    
+                    <!-- Search Bar (only for authenticated users) -->
+                    @auth
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </span>
+                        <input type="text" placeholder="Rechercher..." class="w-64 bg-gray-50 border border-gray-200 rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all">
+                    </div>
+                    @endauth
                 </nav>
 
                 <!-- Auth Buttons -->
                 <div class="flex items-center gap-3">
                     @auth
+                        <!-- Notifications -->
+                        <div x-data="{ open: false }" class="relative">
+                            <button @click="open = !open" class="relative p-2 text-gray-400 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                                @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
+                                @if($unreadCount > 0)
+                                    <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold border-2 border-white">
+                                        {{ $unreadCount > 9 ? '9+' : $unreadCount }}
+                                    </span>
+                                @endif
+                            </button>
+
+                            <!-- Notifications Dropdown -->
+                            <div x-show="open" 
+                                 @click.away="open = false"
+                                 x-cloak
+                                 class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                                <div class="px-4 py-2 border-b border-gray-200">
+                                    <h3 class="text-sm font-semibold text-gray-900">Notifications</h3>
+                                </div>
+                                <div class="max-h-96 overflow-y-auto">
+                                    @forelse(auth()->user()->notifications->take(5) as $notification)
+                                        <a href="{{ $notification->data['url'] ?? '#' }}" 
+                                           class="block px-4 py-3 hover:bg-gray-50 transition-colors {{ $notification->read_at ? 'opacity-60' : 'bg-blue-50' }}">
+                                            <p class="text-sm font-medium text-gray-900">{{ $notification->data['title'] ?? 'Notification' }}</p>
+                                            <p class="text-xs text-gray-500 mt-1">{{ $notification->data['message'] ?? '' }}</p>
+                                            <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                        </a>
+                                    @empty
+                                        <div class="px-4 py-8 text-center">
+                                            <svg class="w-12 h-12 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                            </svg>
+                                            <p class="text-sm text-gray-500">Aucune notification</p>
+                                        </div>
+                                    @endforelse
+                                </div>
+                            </div>
+                        </div>
+
                         <a href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('operator.profile.show') }}" 
                            class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">
                             Mon espace
@@ -80,6 +135,11 @@
             <div class="px-4 py-3 space-y-3">
                 <a href="{{ route('home') }}" class="block text-sm font-medium text-gray-700 hover:text-primary-600">Accueil</a>
                 <a href="{{ route('annuaire') }}" class="block text-sm font-medium text-gray-700 hover:text-primary-600">Annuaire</a>
+                @auth
+                    @if(auth()->user()->isOperateur())
+                        <a href="{{ route('operator.announcements.index') }}" class="block text-sm font-medium text-gray-700 hover:text-primary-600">Annonces</a>
+                    @endif
+                @endauth
                 <a href="{{ route('actualities') }}" class="block text-sm font-medium text-gray-700 hover:text-primary-600">Actualités</a>
                 @guest
                     <a href="{{ route('login') }}" class="block text-sm font-medium text-gray-700 hover:text-primary-600">Connexion</a>
@@ -94,7 +154,8 @@
         @yield('content')
     </main>
 
-    <!-- Footer -->
+    <!-- Footer (hidden on auth pages) -->
+    @if(!in_array(Route::currentRouteName(), ['login', 'register']))
     <footer class="bg-white border-t border-gray-200 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -168,6 +229,7 @@
             </div>
         </div>
     </footer>
+    @endif
 
 </body>
 </html>

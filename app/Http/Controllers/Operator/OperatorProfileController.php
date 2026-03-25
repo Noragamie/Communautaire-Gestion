@@ -16,6 +16,12 @@ class OperatorProfileController extends Controller
     public function show()
     {
         $profile = Auth::user()->profile()->with('documents','category')->first();
+        
+        if (!$profile) {
+            return redirect()->route('operator.profile.create')
+                ->with('info', 'Veuillez créer votre profil pour accéder à votre espace.');
+        }
+        
         return view('operator.profile.show', compact('profile'));
     }
 

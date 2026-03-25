@@ -76,7 +76,7 @@
                         </p>
                     </div>
                     
-                    <div class="mt-6 flex items-center justify-between">
+                    <div class="mt-6 flex items-center">
                         <div class="flex -space-x-2">
                             <div class="w-10 h-10 rounded-full border-2 border-white bg-gradient-to-br from-primary-500 to-primary-600"></div>
                             <div class="w-10 h-10 rounded-full border-2 border-white bg-gradient-to-br from-accent-500 to-accent-600"></div>
@@ -85,9 +85,6 @@
                                 +12
                             </div>
                         </div>
-                        <button class="px-6 py-2 rounded-lg bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 transition-all">
-                            S'inscrire
-                        </button>
                     </div>
                 </div>
             </div>
