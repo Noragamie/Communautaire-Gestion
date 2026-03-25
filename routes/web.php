@@ -19,6 +19,7 @@ Route::get('/profils/{profile}', [PublicProfileController::class, 'show'])->name
 Route::get('/annuaire', [PublicProfileController::class, 'annuaire'])->name('annuaire');
 Route::get('/annuaire/{category}', [PublicProfileController::class, 'byCategory'])->name('category.show');
 Route::get('/actualites', [PublicProfileController::class, 'actualities'])->name('actualities');
+Route::get('/discussions', function () { return view('visitor.discussions'); })->name('discussions');
 Route::post('/newsletter/subscribe', [PublicProfileController::class, 'subscribeNewsletter'])->name('newsletter.subscribe');
 Route::get('/newsletter/unsubscribe/{token}', [PublicProfileController::class, 'unsubscribeNewsletter'])->name('newsletter.unsubscribe');
 
