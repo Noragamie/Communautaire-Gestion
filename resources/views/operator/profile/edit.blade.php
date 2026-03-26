@@ -79,6 +79,21 @@
                        class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-gray-900">
             </div>
 
+            <!-- Visibilité des contacts (RGPD) -->
+            <div class="mt-6 flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div>
+                    <p class="text-sm font-semibold text-gray-900">Afficher mes coordonnées publiquement</p>
+                    <p class="text-xs text-gray-500 mt-0.5">Email et téléphone visibles sur votre profil public</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="hidden" name="contact_visible" value="0">
+                    <input type="checkbox" name="contact_visible" value="1" class="sr-only peer"
+                           {{ old('contact_visible', $profile->contact_visible) ? 'checked' : '' }}>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-primary-500 rounded-full peer peer-checked:bg-primary-600 transition-colors"></div>
+                    <div class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+                </label>
+            </div>
+
             <!-- Photo de profil -->
             <div class="mt-6">
                 <label class="block text-sm font-semibold text-gray-900 mb-3">Photo de profil</label>

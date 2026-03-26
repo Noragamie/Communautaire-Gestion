@@ -7,8 +7,8 @@
     <div class="bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl p-8 mb-6 shadow-lg">
         <div class="flex items-center gap-6">
             @if($profile->photo)
-                <img src="{{ asset('storage/'.$profile->photo) }}" 
-                     alt="{{ $profile->user->name }}" 
+                <img src="{{ asset('storage/'.$profile->photo) }}"
+                     alt="{{ $profile->user->name }}"
                      class="w-24 h-24 rounded-2xl object-cover border-4 border-white shadow-lg">
             @else
                 <div class="w-24 h-24 rounded-2xl bg-white flex items-center justify-center shadow-lg">
@@ -17,7 +17,7 @@
                     </span>
                 </div>
             @endif
-            
+
             <div class="flex-1">
                 <div class="flex items-center gap-3 mb-2">
                     <h1 class="text-3xl font-bold text-white">{{ $profile->user->name }}</h1>
@@ -39,8 +39,8 @@
                     <span>{{ $profile->localisation }}</span>
                 </div>
             </div>
-            
-            <a href="{{ route('operator.profile.edit') }}" 
+
+            <a href="{{ route('operator.profile.edit') }}"
                class="px-6 py-3 bg-white text-primary-600 rounded-xl font-semibold hover:shadow-xl transition-all hover:scale-105">
                 Modifier mon profil
             </a>
@@ -107,6 +107,22 @@
                     Contact
                 </h2>
                 <div class="space-y-3">
+                    {{-- Toggle contact visible --}}
+                    <form method="POST" action="{{ route('operator.profile.contact-visible') }}">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit"
+                                class="w-full flex items-center justify-between p-3 rounded-xl border transition-colors
+                                       {{ $profile->contact_visible ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200' }}">
+                            <span class="text-sm font-medium {{ $profile->contact_visible ? 'text-green-800' : 'text-gray-600' }}">
+                                {{ $profile->contact_visible ? 'Coordonnées visibles' : 'Coordonnées masquées' }}
+                            </span>
+                            <div class="w-10 h-5 rounded-full relative transition-colors {{ $profile->contact_visible ? 'bg-green-500' : 'bg-gray-300' }}">
+                                <div class="absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform {{ $profile->contact_visible ? 'translate-x-5' : 'translate-x-0.5' }}"></div>
+                            </div>
+                        </button>
+                    </form>
+
                     <div class="flex items-start gap-3">
                         <svg class="w-5 h-5 text-gray-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>

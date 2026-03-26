@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Newsletter;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -38,6 +39,9 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
             'role'     => 'operateur',
         ]);
+
+        // Lier un abonnement newsletter existant à ce compte
+        Newsletter::where('email', $user->email)->whereNull('user_id')->update(['user_id' => $user->id]);
 
         event(new Registered($user));
         Auth::login($user);

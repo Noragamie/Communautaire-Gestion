@@ -69,41 +69,121 @@
                 <div class="flex items-center gap-3">
                     @auth
                         <!-- Notifications -->
-                        <div x-data="{ open: false }" class="relative">
-                            <button @click="open = !open" class="relative p-2 text-gray-400 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                                @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
-                                @if($unreadCount > 0)
-                                    <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold notification-badge border-2 border-white">
-                                        {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-                                    </span>
-                                @endif
+                        <div class="relative"
+                             x-data="{
+                                 open: false,
+                                 count: 0,
+                                 notifications: [],
+                                 showMotifModal: false,
+                                 selectedMotif: '',
+                                 selectedMotifMessage: '',
+                                 init() {
+                                     this.fetch();
+                                     setInterval(() => this.fetch(), 30000);
+                                 },
+                                 fetch() {
+                                     window.fetch('{{ route('notifications.data') }}')
+                                         .then(r => r.json())
+                                         .then(data => {
+                                             this.count = data.count;
+                                             this.notifications = data.notifications;
+                                         });
+                                 },
+                                 markAllRead() {
+                                     fetch('{{ route('notifications.read-all') }}', {
+                                         method: 'POST',
+                                         headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+                                     }).then(() => { this.count = 0; this.notifications.forEach(n => n.read = true); });
+                                 }
+                             }"
+                             @click.outside="open = false">
+                            <button @click="open = !open"
+                                    class="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-all overflow-visible">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                                </svg>
+                                <span x-cloak x-show="count > 0"
+                                      x-text="count > 9 ? '9+' : count"
+                                      class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                                </span>
                             </button>
 
                             <!-- Notifications Dropdown -->
-                            <div x-show="open" 
-                                 @click.away="open = false"
-                                 x-cloak
-                                 class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
-                                <div class="px-4 py-2 border-b border-gray-200">
-                                    <h3 class="text-sm font-semibold text-gray-900">Notifications</h3>
+                            <div x-show="open"
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50"
+                                 style="display:none">
+                                <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                                    <span class="font-semibold text-sm text-gray-900">Notifications</span>
+                                    <button x-show="count > 0" @click="markAllRead()"
+                                            class="text-xs text-primary-600 hover:text-primary-700 font-medium">
+                                        Tout marquer comme lu
+                                    </button>
                                 </div>
-                                <div class="max-h-96 overflow-y-auto">
-                                    @forelse(auth()->user()->notifications->take(5) as $notification)
-                                        <a href="{{ $notification->data['url'] ?? '#' }}" 
-                                           class="block px-4 py-3 hover:bg-gray-50 transition-colors {{ $notification->read_at ? 'opacity-60' : 'bg-blue-50' }}">
-                                            <p class="text-sm font-medium text-gray-900">{{ $notification->data['title'] ?? 'Notification' }}</p>
-                                            <p class="text-xs text-gray-500 mt-1">{{ $notification->data['message'] ?? '' }}</p>
-                                            <p class="text-xs text-gray-400 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
-                                        </a>
-                                    @empty
-                                        <div class="px-4 py-8 text-center">
-                                            <svg class="w-12 h-12 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                                            </svg>
-                                            <p class="text-sm text-gray-500">Aucune notification</p>
+                                <div class="divide-y divide-gray-50 max-h-72 overflow-y-auto">
+                                    <template x-if="notifications.length === 0">
+                                        <div class="px-4 py-8 text-center text-sm text-gray-400">Aucune notification</div>
+                                    </template>
+                                    <template x-for="notif in notifications" :key="notif.id">
+                                        <div>
+                                            <!-- Notif avec motif → ouvre modal -->
+                                            <template x-if="notif.motif">
+                                                <button @click="selectedMotif = notif.motif; selectedMotifMessage = notif.message; showMotifModal = true; fetch(notif.url)"
+                                                        class="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                                                        :class="!notif.read ? 'bg-primary-50/40' : ''">
+                                                    <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0 bg-red-400"></div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm text-gray-800 leading-snug" x-text="notif.message"></p>
+                                                        <p class="text-xs text-primary-600 mt-1">Cliquer pour voir le motif</p>
+                                                        <p class="text-xs text-gray-400 mt-0.5" x-text="notif.date"></p>
+                                                    </div>
+                                                </button>
+                                            </template>
+                                            <!-- Notif normale → redirige -->
+                                            <template x-if="!notif.motif">
+                                                <a :href="notif.url"
+                                                   class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                                                   :class="!notif.read ? 'bg-primary-50/40' : ''">
+                                                    <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0"
+                                                         :class="!notif.read ? 'bg-primary-500' : 'bg-gray-300'"></div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm text-gray-800 leading-snug" x-text="notif.message"></p>
+                                                        <p class="text-xs text-gray-400 mt-1" x-text="notif.date"></p>
+                                                    </div>
+                                                </a>
+                                            </template>
                                         </div>
-                                    @endforelse
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Modal motif de refus -->
+                            <div x-show="showMotifModal" x-cloak
+                                 class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+                                 @click.self="showMotifModal = false">
+                                <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 border border-gray-200">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </div>
+                                        <h3 class="font-bold text-gray-900" x-text="selectedMotifMessage"></h3>
+                                    </div>
+                                    <div class="bg-red-50 border border-red-100 rounded-xl p-4 mb-4">
+                                        <p class="text-sm font-semibold text-red-700 mb-1">Motif</p>
+                                        <p class="text-sm text-red-800" x-text="selectedMotif"></p>
+                                    </div>
+                                    <button @click="showMotifModal = false"
+                                            class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors text-sm">
+                                        Fermer
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -135,6 +215,10 @@
                                         <a href="{{ route('operator.announcements.index') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
                                             Mes annonces
+                                        </a>
+                                        <a href="{{ route('operator.settings') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                            Paramètres
                                         </a>
                                     @endif
                                     @if(auth()->user()->isAdmin())

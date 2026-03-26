@@ -28,16 +28,42 @@ class LoginController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $user = Auth::user();
+
+            if (!$user->hasVerifiedEmail()) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                return redirect()->route('login')
+                    ->withErrors(['email' => 'Veuillez confirmer votre adresse email avant de vous connecter. Vérifiez votre boîte mail.'])
+                    ->withInput($request->only('email'));
+            }
+
+            if ($user->is_suspended) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+                AuthLog::create([
+                    'user_id'    => $user->id,
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'action'     => 'failed',
+                ]);
+                return back()->withErrors([
+                    'email' => 'Votre compte a été suspendu. Contactez l\'administrateur.',
+                ])->withInput($request->only('email'));
+            }
+
             $request->session()->regenerate();
 
             AuthLog::create([
-                'user_id'    => Auth::id(),
+                'user_id'    => $user->id,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
                 'action'     => 'login',
             ]);
 
-            return match(Auth::user()->role) {
+            return match($user->role) {
                 'admin'     => redirect()->route('admin.dashboard'),
                 'operateur' => redirect()->route('operator.profile.show'),
                 default     => redirect()->route('home'),

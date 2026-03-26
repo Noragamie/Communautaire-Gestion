@@ -18,12 +18,28 @@ class NotificationController extends Controller
         return $url ? redirect($url) : back();
     }
 
-    /**
-     * Marque toutes les notifications comme lues.
-     */
     public function readAll()
     {
         auth()->user()->unreadNotifications->markAsRead();
         return back();
+    }
+
+    public function data()
+    {
+        $user = auth()->user();
+
+        $notifications = $user->notifications()->latest()->take(8)->get()->map(fn($n) => [
+            'id'      => $n->id,
+            'message' => $n->data['message'] ?? '',
+            'motif'   => $n->data['motif'] ?? null,
+            'url'     => route('notifications.read', $n->id),
+            'read'    => !is_null($n->read_at),
+            'date'    => $n->created_at->diffForHumans(),
+        ]);
+
+        return response()->json([
+            'count'         => $user->unreadNotifications()->count(),
+            'notifications' => $notifications,
+        ]);
     }
 }
