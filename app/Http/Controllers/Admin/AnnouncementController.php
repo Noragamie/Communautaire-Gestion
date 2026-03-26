@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Mail\AnnouncementMail;
+use App\Services\ActivityLogger;
 use App\Models\Announcement;
 use App\Models\User;
 use App\Notifications\AnnouncementPublished;
@@ -57,6 +58,7 @@ class AnnouncementController extends Controller
                 $this->notifyValidatedUsers($announcement);
             }
 
+            ActivityLogger::log($publish ? 'announcement_published' : 'announcement_created', 'Announcement', $announcement->id, $announcement->title);
             $message = $publish ? 'Annonce publiée et utilisateurs notifiés.' : 'Annonce enregistrée comme brouillon.';
             return redirect()->route('admin.announcements.index')->with('success', $message);
         } catch (\Exception $e) {
@@ -103,6 +105,7 @@ class AnnouncementController extends Controller
                 $this->notifyValidatedUsers($announcement);
             }
 
+            ActivityLogger::log($publish ? 'announcement_published' : 'announcement_updated', 'Announcement', $announcement->id, $announcement->title);
             $message = $publish ? 'Annonce publiée.' : 'Brouillon enregistré.';
             return redirect()->route('admin.announcements.index')->with('success', $message);
         } catch (\Exception $e) {
@@ -113,10 +116,13 @@ class AnnouncementController extends Controller
     public function destroy(Announcement $announcement)
     {
         try {
+            $label = $announcement->title;
+            $id    = $announcement->id;
             if ($announcement->image) {
                 Storage::disk('public')->delete($announcement->image);
             }
             $announcement->delete();
+            ActivityLogger::log('announcement_deleted', 'Announcement', $id, $label);
             return back()->with('success', 'Annonce supprimée.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la suppression.']);
@@ -125,7 +131,7 @@ class AnnouncementController extends Controller
 
     private function notifyValidatedUsers(Announcement $announcement): void
     {
-        $users = User::where('is_active', true)->get();
+        $users = User::where('is_active', true)->where('role', '!=', 'admin')->get();
 
         foreach ($users as $user) {
             Mail::to($user->email)->send(new AnnouncementMail($announcement));

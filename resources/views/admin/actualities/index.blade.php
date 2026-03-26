@@ -5,7 +5,7 @@
 @section('content')
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Actualités</h1>
+            <h1 class="text-3xl font-bold text-gray-900">Actualités économiques</h1>
             <p class="text-gray-600 mt-1">Gérez les événements et actualités de la communauté</p>
         </div>
         <a href="{{ route('admin.actualities.create') }}"

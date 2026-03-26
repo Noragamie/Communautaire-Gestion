@@ -10,10 +10,10 @@ class CheckActive
 {
     public function handle(Request $request, Closure $next): mixed
     {
-        if (Auth::check() && !Auth::user()->is_active) {
+        if (Auth::check() && Auth::user()->is_suspended) {
             Auth::logout();
             return redirect('/connexion')
-                ->withErrors(['email' => 'Votre compte a été désactivé. Contactez l\'administrateur.']);
+                ->withErrors(['email' => 'Votre compte a été suspendu. Contactez l\'administrateur.']);
         }
         return $next($request);
     }

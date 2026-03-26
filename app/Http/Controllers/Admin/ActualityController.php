@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\NewsletterMail;
 use App\Models\Actuality;
+use App\Services\ActivityLogger;
 use App\Models\Newsletter;
 use App\Models\User;
 use App\Notifications\ActualityPublished;
@@ -57,10 +58,11 @@ class ActualityController extends Controller
                 Newsletter::where('subscribed', true)->each(function ($subscriber) use ($actuality) {
                     Mail::to($subscriber->email)->send(new NewsletterMail($actuality, $subscriber->token));
                 });
-                $users = User::where('is_active', true)->get();
+                $users = User::where('is_active', true)->where('role', '!=', 'admin')->get();
                 Notification::send($users, new ActualityPublished($actuality));
             }
 
+            ActivityLogger::log($publish ? 'actuality_published' : 'actuality_created', 'Actuality', $actuality->id, $actuality->title);
             $message = $publish ? 'Actualité publiée et newsletter envoyée.' : 'Actualité enregistrée comme brouillon.';
             return redirect()->route('admin.actualities.index')->with('success', $message);
         } catch (\Exception $e) {
@@ -106,10 +108,11 @@ class ActualityController extends Controller
                 Newsletter::where('subscribed', true)->each(function ($subscriber) use ($actuality) {
                     Mail::to($subscriber->email)->send(new NewsletterMail($actuality, $subscriber->token));
                 });
-                $users = User::where('is_active', true)->get();
+                $users = User::where('is_active', true)->where('role', '!=', 'admin')->get();
                 Notification::send($users, new ActualityPublished($actuality));
             }
 
+            ActivityLogger::log($publish ? 'actuality_published' : 'actuality_updated', 'Actuality', $actuality->id, $actuality->title);
             $message = $publish ? 'Actualité publiée.' : 'Brouillon enregistré.';
             return redirect()->route('admin.actualities.index')->with('success', $message);
         } catch (\Exception $e) {
@@ -128,6 +131,7 @@ class ActualityController extends Controller
             $users = User::where('is_active', true)->get();
             Notification::send($users, new ActualityPublished($actuality));
 
+            ActivityLogger::log('actuality_published', 'Actuality', $actuality->id, $actuality->title);
             return back()->with('success', 'Actualité publiée et newsletter envoyée aux abonnés.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la publication.']);
@@ -137,7 +141,10 @@ class ActualityController extends Controller
     public function destroy(Actuality $actuality)
     {
         try {
+            $label = $actuality->title;
+            $id    = $actuality->id;
             $actuality->delete();
+            ActivityLogger::log('actuality_deleted', 'Actuality', $id, $label);
             return back()->with('success', 'Actualité supprimée.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la suppression.']);

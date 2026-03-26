@@ -24,22 +24,44 @@
 
 <div class="flex min-h-screen">
     <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 sticky top-0 h-screen">
+    <aside class="w-66 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 sticky top-0 h-screen">
         <div class="p-6 border-b border-gray-200 flex items-center justify-between">
             <p class="font-bold text-xl text-gray-900">Administration</p>
-            @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
-            <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                <div class="relative"
+                 x-data="{
+                     open: false,
+                     count: 0,
+                     notifications: [],
+                     init() {
+                         this.fetch();
+                         setInterval(() => this.fetch(), 30000);
+                     },
+                     fetch() {
+                         window.fetch('{{ route('notifications.data') }}')
+                             .then(r => r.json())
+                             .then(data => {
+                                 this.count = data.count;
+                                 this.notifications = data.notifications;
+                             });
+                     },
+                     markAllRead() {
+                         fetch('{{ route('notifications.read-all') }}', {
+                             method: 'POST',
+                             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' }
+                         }).then(() => { this.count = 0; this.notifications.forEach(n => n.read = true); });
+                     }
+                 }"
+                 @click.outside="open = false">
                 <button @click="open = !open"
-                        class="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-all">
+                        class="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-all overflow-visible">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                     </svg>
-                    @if($unreadCount > 0)
-                        <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                            {{ $unreadCount > 9 ? '9+' : $unreadCount }}
-                        </span>
-                    @endif
+                    <span x-cloak x-show="count > 0"
+                          x-text="count > 9 ? '9+' : count"
+                          class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                    </span>
                 </button>
 
                 <!-- Dropdown notifications -->
@@ -50,41 +72,34 @@
                      x-transition:leave="transition ease-in duration-75"
                      x-transition:leave-start="opacity-100 scale-100"
                      x-transition:leave-end="opacity-0 scale-95"
-                     class="absolute left-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50 overflow-hidden">
-                    @php $notifications = auth()->user()->notifications()->latest()->take(8)->get(); @endphp
+                     class="absolute left-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-200 z-50"
+                     style="display:none">
 
                     <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
                         <span class="font-semibold text-sm text-gray-900">Notifications</span>
-                        @if($unreadCount > 0)
-                            <form method="POST" action="{{ route('notifications.read-all') }}">
-                                @csrf
-                                <button type="submit" class="text-xs text-primary-600 hover:text-primary-700 font-medium">
-                                    Tout marquer comme lu
-                                </button>
-                            </form>
-                        @endif
+                        <button x-show="count > 0" @click="markAllRead()"
+                                class="text-xs text-primary-600 hover:text-primary-700 font-medium">
+                            Tout marquer comme lu
+                        </button>
                     </div>
 
-                    @if($notifications->isEmpty())
-                        <div class="px-4 py-8 text-center text-sm text-gray-400">
-                            Aucune notification
-                        </div>
-                    @else
-                        <div class="divide-y divide-gray-50 max-h-72 overflow-y-auto">
-                            @foreach($notifications as $notif)
-                                <a href="{{ route('notifications.read', $notif->id) }}"
-                                   class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors
-                                          {{ is_null($notif->read_at) ? 'bg-primary-50/40' : '' }}">
-                                    <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0
-                                                {{ is_null($notif->read_at) ? 'bg-primary-500' : 'bg-gray-300' }}"></div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm text-gray-800 leading-snug">{{ $notif->data['message'] }}</p>
-                                        <p class="text-xs text-gray-400 mt-1">{{ $notif->created_at->diffForHumans() }}</p>
-                                    </div>
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
+                    <div class="divide-y divide-gray-50 max-h-72 overflow-y-auto">
+                        <template x-if="notifications.length === 0">
+                            <div class="px-4 py-8 text-center text-sm text-gray-400">Aucune notification</div>
+                        </template>
+                        <template x-for="notif in notifications" :key="notif.id">
+                            <a :href="notif.url"
+                               class="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                               :class="!notif.read ? 'bg-primary-50/40' : ''">
+                                <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0"
+                                     :class="!notif.read ? 'bg-primary-500' : 'bg-gray-300'"></div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-gray-800 leading-snug" x-text="notif.message"></p>
+                                    <p class="text-xs text-gray-400 mt-1" x-text="notif.date"></p>
+                                </div>
+                            </a>
+                        </template>
+                    </div>
                 </div>
             </div>
         </div>
@@ -110,6 +125,22 @@
                 Profils
             </a>
 
+            @php $pendingModifications = \App\Models\ModificationRequest::where('status','pending')->count(); @endphp
+            <a href="{{ route('admin.modifications.index') }}"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
+                      {{ request()->routeIs('admin.modifications.*') ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Modifications
+                @if($pendingModifications > 0)
+                    <span class="ml-auto bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                        {{ $pendingModifications }}
+                    </span>
+                @endif
+            </a>
+
             <a href="{{ route('admin.categories.index') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
                       {{ request()->routeIs('admin.categories.*') ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
@@ -127,7 +158,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
                 </svg>
-                Actualités
+                Actualités économiques
             </a>
 
             <a href="{{ route('admin.announcements.index') }}"
@@ -140,6 +171,16 @@
                 Annonces
             </a>
 
+            <a href="{{ route('admin.newsletter') }}"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
+                      {{ request()->routeIs('admin.newsletter') ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                Newsletter
+            </a>
+
             <a href="{{ route('admin.users.index') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
                       {{ request()->routeIs('admin.users.*') ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
@@ -148,6 +189,16 @@
                           d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                 </svg>
                 Utilisateurs
+            </a>
+
+            <a href="{{ route('admin.logs') }}"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
+                      {{ request()->routeIs('admin.logs*') ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+                Journal des logs
             </a>
         </nav>
 
@@ -204,5 +255,6 @@
     </main>
 </div>
 
+@stack('scripts')
 </body>
 </html>

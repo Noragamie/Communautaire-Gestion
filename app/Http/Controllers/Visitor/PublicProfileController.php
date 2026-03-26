@@ -37,7 +37,7 @@ class PublicProfileController extends Controller
 
     public function show(Profile $profile)
     {
-        if (!$profile->isApproved()) {
+        if (!$profile->isApproved() || $profile->user->is_suspended) {
             abort(404, 'Profil non disponible');
         }
         return view('visitor.show', compact('profile'));

@@ -1,4 +1,4 @@
-@extends('layouts.guest')
+@extends('layouts.app')
 @section('title', 'Annuaire des membres - CommunePro')
 
 @section('content')

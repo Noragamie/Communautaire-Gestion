@@ -191,6 +191,9 @@
     color: #9ca3af;
 }
 
+button{
+    overflow: visible !important;
+}
 .input-modern:focus {
     outline: none;
     border-color: #3b82f6;

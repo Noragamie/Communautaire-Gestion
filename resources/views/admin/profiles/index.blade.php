@@ -56,8 +56,8 @@
     </div>
 
     <!-- Profiles Table -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="overflow-x-auto">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
+        <div>
             <table class="w-full">
                 <thead class="bg-gray-50 border-b border-gray-200">
                     <tr>
@@ -102,13 +102,80 @@
                                 {{ $profile->created_at->format('d/m/Y') }}
                             </td>
                             <td class="px-6 py-4">
-                                <a href="{{ route('admin.profiles.show', $profile) }}"
-                                   class="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                    </svg>
-                                    Détails
-                                </a>
+                                <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                                    <button @click="open = !open"
+                                            class="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm0 5.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z"/>
+                                        </svg>
+                                    </button>
+
+                                    <div x-show="open"
+                                         x-cloak
+                                         x-transition:enter="transition ease-out duration-100"
+                                         x-transition:enter-start="opacity-0 scale-95"
+                                         x-transition:enter-end="opacity-100 scale-100"
+                                         x-transition:leave="transition ease-in duration-75"
+                                         x-transition:leave-start="opacity-100 scale-100"
+                                         x-transition:leave-end="opacity-0 scale-95"
+                                         class="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
+
+                                        {{-- Voir --}}
+                                        <a href="{{ route('admin.profiles.show', $profile) }}"
+                                           class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                            Voir
+                                        </a>
+
+                                        <div class="border-t border-gray-100 my-1"></div>
+
+                                        {{-- Désactiver / Activer le compte --}}
+                                        <form method="POST" action="{{ route('admin.users.toggle', $profile->user) }}">
+                                            @csrf
+                                            <button type="submit"
+                                                    class="flex items-center gap-3 px-4 py-2 text-sm w-full text-left transition-colors
+                                                           {{ $profile->user->is_active ? 'text-gray-700 hover:bg-gray-50' : 'text-primary-600 hover:bg-primary-50' }}">
+                                                <svg class="w-4 h-4 {{ $profile->user->is_active ? 'text-gray-400' : 'text-primary-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                                                </svg>
+                                                {{ $profile->user->is_active ? 'Désactiver' : 'Activer le compte' }}
+                                            </button>
+                                        </form>
+
+                                        {{-- Suspendre / Lever la suspension --}}
+                                        <form method="POST" action="{{ route('admin.users.suspend', $profile->user) }}">
+                                            @csrf
+                                            <button type="submit"
+                                                    class="flex items-center gap-3 px-4 py-2 text-sm w-full text-left transition-colors
+                                                           {{ $profile->user->is_suspended ? 'text-green-600 hover:bg-green-50' : 'text-orange-600 hover:bg-orange-50' }}">
+                                                <svg class="w-4 h-4 {{ $profile->user->is_suspended ? 'text-green-400' : 'text-orange-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                                </svg>
+                                                {{ $profile->user->is_suspended ? 'Lever suspension' : 'Suspendre' }}
+                                            </button>
+                                        </form>
+
+                                        <div class="border-t border-gray-100 my-1"></div>
+
+                                        {{-- Supprimer le profil --}}
+                                        <form method="POST" action="{{ route('admin.profiles.destroy', $profile) }}"
+                                              onsubmit="return confirm('Supprimer définitivement ce profil ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                    class="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left transition-colors">
+                                                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                                Supprimer
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @empty

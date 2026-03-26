@@ -119,15 +119,6 @@
                     <div class="mt-8 pt-8 border-t border-gray-200">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-semibold text-gray-900 text-lg">Documents</h3>
-                            <form method="POST" action="{{ route('admin.profiles.export-documents', $profile) }}" class="inline">
-                                @csrf
-                                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors text-sm">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                    </svg>
-                                    Exporter tous les documents
-                                </button>
-                            </form>
                         </div>
 
                         <div class="space-y-3">
@@ -220,6 +211,17 @@
                     </div>
                     <div class="flex gap-4">
                         <button type="button" @click="showRejectModal = false"
-                                class="flex-1 px-6 py-3 border border-gray-300 rounded-xl hover:b
-(Content truncated due to size limit. Use line ranges to read remaining content)
+                                class="flex-1 px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 text-gray-700 font-semibold transition-colors">
+                            Annuler
+                        </button>
+                        <button type="submit"
+                                class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-colors">
+                            Confirmer le rejet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+@endsection
 

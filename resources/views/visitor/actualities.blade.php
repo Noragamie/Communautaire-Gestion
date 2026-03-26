@@ -1,4 +1,4 @@
-@extends('layouts.guest')
+@extends('layouts.app')
 @section('title', 'Calendrier Communautaire - CommunePro')
 
 @section('content')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Profile;
+use App\Services\ActivityLogger;
 use App\Services\ProfileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -41,6 +42,7 @@ class AdminProfileController extends Controller
     {
         try {
             $this->service->approve($profile);
+            ActivityLogger::log('profile_approved', 'Profile', $profile->id, $profile->user->name);
             return back()->with('success', 'Profil approuvé. Un email a été envoyé à l\'opérateur.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de l\'approbation du profil.']);
@@ -58,6 +60,7 @@ class AdminProfileController extends Controller
 
         try {
             $this->service->reject($profile, $request->motif_rejet);
+            ActivityLogger::log('profile_rejected', 'Profile', $profile->id, $profile->user->name);
             return back()->with('success', 'Profil rejeté. L\'opérateur a été notifié par email.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors du rejet du profil.']);
@@ -68,6 +71,7 @@ class AdminProfileController extends Controller
     {
         try {
             $this->service->suspend($profile);
+            ActivityLogger::log('profile_suspended', 'Profile', $profile->id, $profile->user->name);
             return back()->with('success', 'Profil suspendu.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la suspension du profil.']);
@@ -77,7 +81,10 @@ class AdminProfileController extends Controller
     public function destroy(Profile $profile)
     {
         try {
+            $label = $profile->user->name;
+            $id    = $profile->id;
             $profile->delete();
+            ActivityLogger::log('profile_deleted', 'Profile', $id, $label);
             return redirect()->route('admin.profiles.index')->with('success', 'Profil supprimé.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la suppression du profil.']);
