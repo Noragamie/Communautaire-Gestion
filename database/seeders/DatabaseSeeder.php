@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password123'),
             'role' => 'admin',
             'is_active' => true,
-        ]);
+        ])->forceFill(['email_verified_at' => now()])->save();
 
         // Opérateur test
         User::create([
@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password123'),
             'role' => 'operateur',
             'is_active' => true,
-        ]);
+        ])->forceFill(['email_verified_at' => now()])->save();
 
         // Catégories
         $categories = [
