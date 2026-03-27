@@ -2,96 +2,121 @@
 @section('title', 'Accueil - CommunePro')
 
 @section('content')
-<!-- Hero Section -->
-<section class="bg-gradient-to-br from-primary-50 via-white to-accent-50 py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div class="animate-fade-in-up">
-                <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                    Rejoignez la communauté des
-                    <span class="bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">
-                        acteurs économiques
-                    </span>
-                </h1>
-                <p class="text-xl text-gray-600 mb-8 leading-relaxed">
-                    CommunePro connecte les entrepreneurs, artisans et commerçants de votre commune. 
-                    Développez votre réseau, trouvez des opportunités et faites grandir votre activité.
-                </p>
-                <div class="flex flex-wrap gap-4">
-                    @auth
-                        @if(auth()->user()->isOperateur() && auth()->user()->profile)
-                            <a href="{{ route('operator.profile.show') }}" class="px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all hover:shadow-lg hover:scale-105">
-                                Mon profil
-                            </a>
-                        @elseif(auth()->user()->isOperateur())
-                            <a href="{{ route('operator.profile.create') }}" class="px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all hover:shadow-lg hover:scale-105">
-                                Créer mon profil
-                            </a>
-                        @endif
-                    @else
-                        <a href="{{ route('register') }}" class="px-8 py-4 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 transition-all hover:shadow-lg hover:scale-105">
+<!-- Hero Section : pleine largeur viewport + min 100vh sur lg + fond grille -->
+<section class="relative w-screen max-w-[100vw] ml-[calc(50%-50vw)] py-16 lg:min-h-[90vh] lg:flex lg:items-center lg:py-0 overflow-visible">
+    <div class="grid-wrapper" aria-hidden="true">
+        <div class="grid-background"></div>
+    </div>
+    {{-- Pas de max-w-2xl ici : le bloc central doit pouvoir faire toute la largeur du contenu (max-w-6xl) avec cartes en dehors du flux --}}
+    <div class="relative z-10 mx-auto w-full max-w-[min(100rem,calc(100vw-2rem))] px-4 sm:px-6 lg:px-8 pt-4 pb-6 lg:pt-12 lg:pb-6">
+        <!-- Bloc central pleine largeur (max-w-6xl) ; cartes en position absolue à gauche / droite du bloc (hors flux) -->
+        <div class="relative mx-auto w-full max-w-5xl animate-fade-in-up overflow-visible">
+            {{-- text-center sans relative : les cartes xl:absolute se positionnent par rapport à max-w-5xl (sinon %/top ne voit que la hauteur du texte → top 70% ou 90% change à peine) --}}
+            <div class="text-center">
+            <div class="relative z-10">
+            <!-- Badge -->
+            <a href="{{ route('actualities') }}" class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/80 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition hover:border-gray-300 hover:bg-white mb-8">
+                <span>Restez informé des actualités de la communauté</span>
+                <span class="flex h-7 w-7 items-center justify-center rounded-full bg-gray-900 text-white" aria-hidden="true">
+                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </span>
+            </a>
+
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-[1.15] tracking-tight">
+                Rejoignez la communauté des
+                <span class="font-playfair-italic text-gray-900 border-b-2 border-gray-200 pb-1">acteurs économiques</span>
+                de votre commune
+            </h1>
+
+            <p class="text-lg sm:text-xl text-gray-500 font-normal max-w-2xl mx-auto mb-10 leading-relaxed">
+                CommunePro connecte les entrepreneurs, artisans et commerçants de votre commune.
+                Développez votre réseau, trouvez des opportunités et faites grandir votre activité.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                @auth
+                    @if(auth()->user()->isOperateur() && auth()->user()->profile)
+                        <a href="{{ route('operator.profile.show') }}" class="inline-flex w-full sm:w-auto justify-center px-8 py-3.5 rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg">
+                            Mon profil
+                        </a>
+                    @elseif(auth()->user()->isOperateur())
+                        <a href="{{ route('operator.profile.create') }}" class="inline-flex w-full sm:w-auto justify-center px-8 py-3.5 rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg">
                             Créer mon profil
                         </a>
-                    @endauth
-                    <a href="{{ route('annuaire') }}" class="px-8 py-4 bg-white border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-primary-600 hover:text-primary-600 transition-all">
-                        Explorer l'annuaire
+                    @elseif(auth()->user()->isAdmin())
+                        <a href="{{ route('admin.dashboard') }}" class="inline-flex w-full sm:w-auto justify-center px-8 py-3.5 rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg">
+                            Administration
+                        </a>
+                    @endif
+                @else
+                    <a href="{{ route('register') }}" class="inline-flex w-full sm:w-auto justify-center px-8 py-3.5 rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg">
+                        Créer mon compte
                     </a>
-                </div>
+                @endauth
+                <a href="{{ route('annuaire') }}" class="inline-flex w-full sm:w-auto justify-center px-8 py-3.5 rounded-xl border-2 border-gray-200 bg-white text-gray-800 font-semibold hover:border-gray-300 transition-all">
+                    Explorer l’annuaire
+                </a>
+            </div>
+            </div>
 
-                <!-- Stats -->
-                <div class="grid grid-cols-3 gap-6 mt-12">
-                    <div>
-                        <p class="text-3xl font-bold text-primary-600">{{ $profiles->total() }}+</p>
-                        <p class="text-sm text-gray-600">Membres actifs</p>
+            {{-- Même paire de cartes partout : flux (<xl) ; à partir de xl, xl:contents retire le wrapper et les cartes redeviennent absolute (N=500px). --}}
+            <div class="mt-10 flex flex-wrap items-stretch justify-center gap-6 xl:mt-0 xl:contents pointer-events-none select-none" aria-hidden="true">
+                <div class="shrink-0 overflow-visible xl:absolute xl:top-full xl:left-1/2 xl:z-0 xl:[transform:translateX(calc(-50%-500px))_translateY(1rem)_rotate(-6deg)]">
+                    <div class="w-[13.5rem] rounded-2xl border border-gray-200/90 bg-gradient-to-br from-white to-gray-50/95 p-4 text-center shadow-xl shadow-gray-900/10 ring-1 ring-black/5 -rotate-3 sm:-rotate-6 xl:rotate-0">
+                        <div class="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 text-primary-600">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <p class="text-2xl font-bold tracking-tight text-gray-900">{{ $heroProfessionnelsCount }}+</p>
+                        <p class="text-xs font-medium text-gray-600">professionnels</p>
                     </div>
-                    <div>
-                        <p class="text-3xl font-bold text-primary-600">{{ $categories->count() }}</p>
-                        <p class="text-sm text-gray-600">Catégories</p>
-                    </div>
-                    <div>
-                        <p class="text-3xl font-bold text-primary-600">{{ \App\Models\Actuality::count() }}</p>
-                        <p class="text-sm text-gray-600">Événements</p>
+                </div>
+                <div class="shrink-0 overflow-visible xl:absolute xl:top-full xl:left-1/2 xl:z-0 xl:[transform:translateX(calc(-50%+500px))_translateY(1rem)_rotate(3deg)]">
+                    <div class="w-[13.5rem] rounded-2xl border border-gray-200/90 bg-gradient-to-br from-white to-gray-50/95 p-4 text-center shadow-xl shadow-gray-900/10 ring-1 ring-black/5 rotate-3 xl:rotate-0">
+                        <div class="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-accent-50 text-accent-600">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                            </svg>
+                        </div>
+                        <p class="text-2xl font-bold tracking-tight text-gray-900">{{ $heroSecteursCount }}+</p>
+                        <p class="text-xs font-medium text-gray-600">secteurs d’activité</p>
                     </div>
                 </div>
             </div>
 
-            <div class="hidden lg:block">
-                <div class="relative">
-                    <div class="absolute inset-0 bg-gradient-to-br from-primary-400 to-accent-400 rounded-3xl transform rotate-6"></div>
-                    <div class="relative bg-white rounded-3xl shadow-2xl p-8 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
-                        <div class="space-y-6">
-                            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-accent-500"></div>
-                                <div class="flex-1">
-                                    <div class="h-3 bg-gray-200 rounded w-3/4 mb-2"></div>
-                                    <div class="h-2 bg-gray-100 rounded w-1/2"></div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-blue-500"></div>
-                                <div class="flex-1">
-                                    <div class="h-3 bg-gray-200 rounded w-2/3 mb-2"></div>
-                                    <div class="h-2 bg-gray-100 rounded w-1/3"></div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-red-500"></div>
-                                <div class="flex-1">
-                                    <div class="h-3 bg-gray-200 rounded w-4/5 mb-2"></div>
-                                    <div class="h-2 bg-gray-100 rounded w-2/5"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Social proof -->
+            <!-- <div class="mt-14 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                <div class="flex -space-x-3" aria-hidden="true">
+                    <div class="h-10 w-10 rounded-full border-2 border-white bg-gradient-to-br from-primary-400 to-primary-600"></div>
+                    <div class="h-10 w-10 rounded-full border-2 border-white bg-gradient-to-br from-accent-400 to-accent-600"></div>
+                    <div class="h-10 w-10 rounded-full border-2 border-white bg-gradient-to-br from-emerald-400 to-teal-600"></div>
+                    <div class="h-10 w-10 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">+</div>
                 </div>
+                <p class="text-sm text-gray-500 max-w-xs sm:max-w-none sm:text-left">
+                    <span class="font-semibold text-gray-800">{{ $profiles->total() }}+ membres</span> déjà présents sur la plateforme
+                </p>
+            </div> -->
             </div>
         </div>
     </div>
 </section>
 
+<!-- Pont scroll : ligne en tirets + flèche vers la suite -->
+<div class="relative w-screen max-w-[100vw] ml-[calc(50%-50vw)] flex justify-center py-2 lg:py-3">
+    <a href="#accueil-suite"
+       class="animate-scroll-hint flex flex-col items-center rounded-full p-2 text-gray-400 transition-colors hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2"
+       aria-label="Aller à la suite de la page">
+        <svg class="h-[4.25rem] w-8" viewBox="0 0 32 76" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M16 4v50" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="5 7"/>
+            <path d="M9 58l7 7 7-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </a>
+</div>
+
 <!-- Features Section -->
-<section class="py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<section id="accueil-suite" class="scroll-mt-24 py-20 bg-white">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
             <h2 class="text-4xl font-bold text-gray-900 mb-4">Pourquoi rejoindre CommunePro ?</h2>
             <p class="text-xl text-gray-600">Des outils simples pour développer votre activité</p>
@@ -134,7 +159,7 @@
 
 <!-- Search Section -->
 <section class="py-20 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
             <h2 class="text-4xl font-bold text-gray-900 mb-4">Trouvez des professionnels</h2>
             <p class="text-xl text-gray-600">Recherchez par nom, secteur ou catégorie</p>
@@ -170,7 +195,7 @@
 
 <!-- Profiles Grid -->
 <section class="py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between mb-12">
             <div>
                 <h2 class="text-4xl font-bold text-gray-900 mb-2">Membres récents</h2>

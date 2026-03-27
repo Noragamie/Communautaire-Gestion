@@ -3,7 +3,7 @@
 
 @section('content')
 <section class="py-12 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Back Button -->
         <a href="{{ route('annuaire') }}" class="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 mb-8 font-medium text-sm transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

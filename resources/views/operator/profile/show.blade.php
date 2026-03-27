@@ -2,7 +2,7 @@
 @section('title', 'Mon Profil - CommunePro')
 
 @section('content')
-<div class="max-w-7xl mx-auto">
+<div class="max-w-screen-2xl mx-auto">
     <!-- Header with gradient cover -->
     <div class="bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl p-8 mb-6 shadow-lg">
         <div class="flex items-center gap-6">

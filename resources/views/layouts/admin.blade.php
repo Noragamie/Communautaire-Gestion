@@ -6,13 +6,11 @@
     <title>@yield('title', 'Administration') — CommunePro</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
     <style>
         body { 
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #eff6ff 0%, #f9fafb 100%);
+            background: #fff;
         }
         [x-cloak] { display: none !important; }
         .stat-card { transition: all 0.3s ease; }
@@ -20,7 +18,7 @@
     </style>
     @stack('styles')
 </head>
-<body class="antialiased min-h-screen">
+<body class="antialiased min-h-screen font-sans">
 
 <div class="flex min-h-screen">
     <!-- Sidebar -->

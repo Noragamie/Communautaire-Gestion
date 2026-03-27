@@ -8,6 +8,7 @@ use App\Models\Actuality;
 use App\Models\Category;
 use App\Models\Newsletter;
 use App\Models\Profile;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -32,6 +33,8 @@ class PublicProfileController extends Controller
         return view('visitor.index', [
             'profiles'   => $query->paginate(12),
             'categories' => Category::all(),
+            'heroProfessionnelsCount' => Profile::approved()->count(),
+            'heroSecteursCount' => Category::count(),
         ]);
     }
 
@@ -45,8 +48,61 @@ class PublicProfileController extends Controller
 
     public function annuaire(Request $request)
     {
-        $categories = Category::withCount(['profiles'=>fn($q)=>$q->approved()])->get();
-        return view('visitor.annuaire', compact('categories'));
+        $categories = Category::query()
+            ->withCount(['profiles' => fn ($q) => $q->approved()])
+            ->orderBy('name')
+            ->get();
+
+        $query = Profile::approved()->with(['user', 'category', 'documents']);
+
+        $categoryIds = array_values(array_filter(array_map('intval', (array) $request->input('categories', []))));
+        if ($categoryIds === [] && $request->filled('category')) {
+            $categoryIds = [(int) $request->input('category')];
+        }
+        if ($categoryIds !== []) {
+            $query->whereIn('category_id', $categoryIds);
+        }
+
+        if ($request->filled('search')) {
+            $s = $request->input('search');
+            $query->where(function ($q) use ($s) {
+                $q->whereHas('user', fn ($qu) => $qu->where('name', 'like', "%{$s}%"))
+                    ->orWhere('bio', 'like', "%{$s}%")
+                    ->orWhere('secteur_activite', 'like', "%{$s}%")
+                    ->orWhere('localisation', 'like', "%{$s}%")
+                    ->orWhere('competences', 'like', "%{$s}%");
+            });
+        }
+
+        if ($request->filled('location')) {
+            $loc = $request->input('location');
+            $query->where('localisation', 'like', "%{$loc}%");
+        }
+
+        $sort = $request->input('sort', 'newest');
+        match ($sort) {
+            'name_asc' => $query->orderBy(
+                User::query()
+                    ->select('name')
+                    ->whereColumn('users.id', 'profiles.user_id')
+                    ->limit(1)
+            ),
+            'name_desc' => $query->orderByDesc(
+                User::query()
+                    ->select('name')
+                    ->whereColumn('users.id', 'profiles.user_id')
+                    ->limit(1)
+            ),
+            'category' => $query
+                ->join('categories', 'categories.id', '=', 'profiles.category_id')
+                ->orderBy('categories.name')
+                ->select('profiles.*'),
+            default => $query->latest('profiles.updated_at'),
+        };
+
+        $profiles = $query->paginate(12)->withQueryString();
+
+        return view('visitor.annuaire', compact('categories', 'profiles'));
     }
 
     public function byCategory(Category $category, Request $request)
