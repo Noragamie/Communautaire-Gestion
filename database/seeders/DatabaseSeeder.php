@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(CommuneSeeder::class);
 
-        $admin = User::updateOrCreate([
+        $admin = User::firstOrCreate([
             'name' => 'Administrateur',
             'email' => 'admin@commune.bj',
             'password' => Hash::make('password123'),
@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
 
         $cotonou = Commune::where('name', 'Cotonou')->first();
 
-        User::updateOrCreate([
+        User::firstOrCreate([
             'name' => 'Jean Dupont',
             'email' => 'jean@example.com',
             'password' => Hash::make('password123'),
