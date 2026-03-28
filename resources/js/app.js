@@ -135,3 +135,12 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Tableau de bord admin : graphiques (chunk chargé seulement si la page expose les données)
+if (document.getElementById('dashboard-charts-payload')) {
+    import('./dashboard-charts.js')
+        .then((mod) => {
+            requestAnimationFrame(() => mod.initDashboardCharts());
+        })
+        .catch(() => {});
+}

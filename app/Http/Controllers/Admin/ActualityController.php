@@ -5,46 +5,97 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\NewsletterMail;
 use App\Models\Actuality;
-use App\Services\ActivityLogger;
 use App\Models\Newsletter;
 use App\Models\User;
 use App\Notifications\ActualityPublished;
+use App\Services\ActivityLogger;
+use App\Services\CommuneContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 
 class ActualityController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $actualities = Actuality::with('author')->latest()->paginate(15);
-        return view('admin.actualities.index', compact('actualities'));
+        $filterCommuneId = $request->filled('commune_id') ? (int) $request->commune_id : null;
+        $ids = CommuneContext::scopedCommuneIdsForQuery($filterCommuneId);
+        $actualities = Actuality::with(['author', 'commune'])
+            ->when(CommuneContext::needsTerritorialScope() && $ids !== [], fn ($q) => $q->whereIn('commune_id', $ids))
+            ->when(CommuneContext::needsTerritorialScope() && $ids === [], fn ($q) => $q->whereRaw('1 = 0'))
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
+        $user = $request->user();
+        $showCommuneFilter = CommuneContext::shouldShowAdminCommuneListFilter();
+        $managedCommunesForFilter = $showCommuneFilter
+            ? $user->managedCommunes()->orderBy('name')->get()
+            : collect();
+
+        return view('admin.actualities.index', compact(
+            'actualities',
+            'showCommuneFilter',
+            'managedCommunesForFilter'
+        ));
     }
 
     public function create()
     {
-        return view('admin.actualities.create');
+        $communesForCreate = collect();
+        $user = Auth::user();
+        if ($user && $user->isAdmin() && CommuneContext::isAdminViewingAllManagedCommunes()) {
+            $communesForCreate = $user->managedCommunes()->orderBy('name')->get();
+        }
+
+        return view('admin.actualities.create', compact('communesForCreate'));
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'title'   => 'required|string|max:255',
-            'content' => 'required|string',
-            'image'   => 'nullable|image|max:2048',
-        ], [
-            'title.required' => 'Le titre est requis.',
-            'content.required' => 'Le contenu est requis.',
-            'image.image' => 'Le fichier doit être une image.',
-            'image.max' => 'L\'image ne doit pas dépasser 2 Mo.',
-        ]);
+        $user = Auth::user();
+        if ($user->isAdmin() && CommuneContext::isAdminViewingAllManagedCommunes()) {
+            $request->validate([
+                'commune_id' => 'required|integer|exists:communes,id',
+                'title' => 'required|string|max:255',
+                'content' => 'required|string',
+                'image' => 'nullable|image|max:2048',
+            ], [
+                'commune_id.required' => 'Choisissez la commune concernée.',
+                'title.required' => 'Le titre est requis.',
+                'content.required' => 'Le contenu est requis.',
+                'image.image' => 'Le fichier doit être une image.',
+                'image.max' => 'L\'image ne doit pas dépasser 2 Mo.',
+            ]);
+            $cid = (int) $request->input('commune_id');
+            if (! $user->canManageCommune($cid)) {
+                return back()->withErrors(['commune_id' => 'Vous ne gérez pas cette commune.'])->withInput();
+            }
+        } else {
+            $cid = CommuneContext::activeId();
+            if ($cid === null) {
+                return back()->withErrors(['error' => 'Aucune commune active.'])->withInput();
+            }
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'content' => 'required|string',
+                'image' => 'nullable|image|max:2048',
+            ], [
+                'title.required' => 'Le titre est requis.',
+                'content.required' => 'Le contenu est requis.',
+                'image.image' => 'Le fichier doit être une image.',
+                'image.max' => 'L\'image ne doit pas dépasser 2 Mo.',
+            ]);
+        }
 
         try {
             $publish = $request->input('action') === 'publish';
 
             $data = $request->only('title', 'content');
-            $data['user_id']      = Auth::id();
+            $data['user_id'] = Auth::id();
+            $data['commune_id'] = $cid;
             $data['is_published'] = $publish;
             $data['published_at'] = $publish ? now() : null;
 
@@ -55,15 +106,12 @@ class ActualityController extends Controller
             $actuality = Actuality::create($data);
 
             if ($publish) {
-                Newsletter::where('subscribed', true)->each(function ($subscriber) use ($actuality) {
-                    Mail::to($subscriber->email)->send(new NewsletterMail($actuality, $subscriber->token));
-                });
-                $users = User::where('is_active', true)->where('role', '!=', 'admin')->get();
-                Notification::send($users, new ActualityPublished($actuality));
+                $this->broadcastActuality($actuality);
             }
 
             ActivityLogger::log($publish ? 'actuality_published' : 'actuality_created', 'Actuality', $actuality->id, $actuality->title);
             $message = $publish ? 'Actualité publiée et newsletter envoyée.' : 'Actualité enregistrée comme brouillon.';
+
             return redirect()->route('admin.actualities.index')->with('success', $message);
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la création de l\'actualité.'])->withInput();
@@ -72,23 +120,28 @@ class ActualityController extends Controller
 
     public function edit(Actuality $actuality)
     {
+        $this->ensureActualityCommune($actuality);
+
         return view('admin.actualities.edit', compact('actuality'));
     }
 
     public function update(Request $request, Actuality $actuality)
     {
+        $this->ensureActualityCommune($actuality);
+
         $request->validate([
-            'title'   => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'image'   => 'nullable|image|max:2048',
+            'image' => 'nullable|image|max:2048',
         ], [
-            'title.required'   => 'Le titre est requis.',
+            'title.required' => 'Le titre est requis.',
             'content.required' => 'Le contenu est requis.',
-            'image.image'      => 'Le fichier doit être une image.',
-            'image.max'        => 'L\'image ne doit pas dépasser 2 Mo.',
+            'image.image' => 'Le fichier doit être une image.',
+            'image.max' => 'L\'image ne doit pas dépasser 2 Mo.',
         ]);
 
         try {
+            $wasPublished = $actuality->is_published;
             $publish = $request->input('action') === 'publish';
 
             $data = $request->only('title', 'content');
@@ -97,23 +150,20 @@ class ActualityController extends Controller
 
             if ($request->hasFile('image')) {
                 if ($actuality->image) {
-                    \Storage::disk('public')->delete($actuality->image);
+                    Storage::disk('public')->delete($actuality->image);
                 }
                 $data['image'] = $request->file('image')->store('actualities', 'public');
             }
 
             $actuality->update($data);
 
-            if ($publish && !$actuality->wasRecentlyCreated) {
-                Newsletter::where('subscribed', true)->each(function ($subscriber) use ($actuality) {
-                    Mail::to($subscriber->email)->send(new NewsletterMail($actuality, $subscriber->token));
-                });
-                $users = User::where('is_active', true)->where('role', '!=', 'admin')->get();
-                Notification::send($users, new ActualityPublished($actuality));
+            if ($publish && ! $wasPublished) {
+                $this->broadcastActuality($actuality);
             }
 
             ActivityLogger::log($publish ? 'actuality_published' : 'actuality_updated', 'Actuality', $actuality->id, $actuality->title);
             $message = $publish ? 'Actualité publiée.' : 'Brouillon enregistré.';
+
             return redirect()->route('admin.actualities.index')->with('success', $message);
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la mise à jour.'])->withInput();
@@ -122,16 +172,14 @@ class ActualityController extends Controller
 
     public function publish(Actuality $actuality)
     {
+        $this->ensureActualityCommune($actuality);
         try {
             $actuality->update(['is_published' => true, 'published_at' => now()]);
 
-            Newsletter::where('subscribed', true)->each(function ($subscriber) use ($actuality) {
-                Mail::to($subscriber->email)->send(new NewsletterMail($actuality, $subscriber->token));
-            });
-            $users = User::where('is_active', true)->get();
-            Notification::send($users, new ActualityPublished($actuality));
+            $this->broadcastActuality($actuality);
 
             ActivityLogger::log('actuality_published', 'Actuality', $actuality->id, $actuality->title);
+
             return back()->with('success', 'Actualité publiée et newsletter envoyée aux abonnés.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la publication.']);
@@ -140,14 +188,30 @@ class ActualityController extends Controller
 
     public function destroy(Actuality $actuality)
     {
+        $this->ensureActualityCommune($actuality);
         try {
             $label = $actuality->title;
-            $id    = $actuality->id;
+            $id = $actuality->id;
             $actuality->delete();
             ActivityLogger::log('actuality_deleted', 'Actuality', $id, $label);
+
             return back()->with('success', 'Actualité supprimée.');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la suppression.']);
         }
+    }
+
+    private function broadcastActuality(Actuality $actuality): void
+    {
+        Newsletter::where('subscribed', true)->each(function ($subscriber) use ($actuality) {
+            Mail::to($subscriber->email)->send(new NewsletterMail($actuality, $subscriber->token));
+        });
+        $users = User::where('is_active', true)->whereNotIn('role', ['admin', 'agent_municipal'])->get();
+        Notification::send($users, new ActualityPublished($actuality));
+    }
+
+    private function ensureActualityCommune(Actuality $actuality): void
+    {
+        CommuneContext::authorizeBackofficeResourceCommune($actuality->commune_id);
     }
 }

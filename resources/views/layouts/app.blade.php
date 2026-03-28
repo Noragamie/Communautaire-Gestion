@@ -6,16 +6,20 @@
     <title>@yield('title', 'CommunePro')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
     <style>
         [x-cloak] { display: none !important; }
         body { 
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #eff6ff 0%, #f9fafb 100%);
+            background: #fff;
             color: #111827;
             min-height: 100vh;
+        }
+        body.page-home {
+            background: #fff;
         }
         
         .notification-badge {
@@ -28,11 +32,11 @@
         }
     </style>
 </head>
-<body class="antialiased min-h-screen flex flex-col">
+<body class="antialiased min-h-screen flex flex-col overflow-x-hidden font-sans @if(request()->routeIs('home', 'profiles.index')) page-home @endif">
 
     <!-- Header -->
-    <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
                 <a href="{{ route('home') }}" class="flex items-center gap-3">
@@ -49,20 +53,20 @@
                 <nav class="hidden md:flex items-center gap-8">
                     <a href="{{ route('home') }}" class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">Accueil</a>
                     <a href="{{ route('annuaire') }}" class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">Annuaire</a>
-                    @auth
+                    <!-- @auth
                         @if(auth()->user()->isOperateur())
                             <a href="{{ route('operator.announcements.index') }}" class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">Annonces</a>
                         @endif
-                    @endauth
+                    @endauth -->
                     <a href="{{ route('actualities') }}" class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">Actualités</a>
                     
                     <!-- Search Bar -->
-                    <div class="relative">
+                    <!-- <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         </span>
                         <input type="text" placeholder="Rechercher..." class="w-64 bg-gray-50 border border-gray-200 rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all">
-                    </div>
+                    </div> -->
                 </nav>
 
                 <!-- Auth Buttons -->
@@ -191,7 +195,7 @@
                         <!-- User Menu Dropdown -->
                         <div x-data="{ open: false }" class="relative">
                             <button @click="open = !open" class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">
-                                <span class="hidden sm:inline">{{ auth()->user()->name }}</span>
+                                <span class="hidden sm:inline">Mon compte</span>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
@@ -221,7 +225,7 @@
                                             Paramètres
                                         </a>
                                     @endif
-                                    @if(auth()->user()->isAdmin())
+                                    @if(auth()->user()->isBackoffice())
                                         <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                                             Administration
@@ -261,7 +265,7 @@
 
     <!-- Main Content -->
     <main class="flex-1">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 ">
             @if(session('success'))
                 <div class="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 text-green-700">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -286,7 +290,7 @@
 
     <!-- Footer -->
     <footer class="bg-white border-t border-gray-200 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <!-- About -->
                 <div class="col-span-1 md:col-span-2">

@@ -17,82 +17,108 @@ use App\Notifications\ModificationApproved;
 use App\Notifications\ModificationRejected;
 use App\Notifications\NewModificationRequested;
 use App\Notifications\NewProfileSubmitted;
+use App\Notifications\NewProfileSubmittedForAdmin;
 use App\Notifications\ProfileApproved;
 use App\Notifications\ProfileRejected;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class ProfileService
 {
+    /**
+     * @return Collection<int, User>
+     */
+    private function backofficeRecipientsForCommune(?int $communeId)
+    {
+        return User::query()
+            ->where(function ($q) use ($communeId) {
+                $q->where('role', 'admin')
+                    ->when($communeId, fn ($q2) => $q2->whereHas('managedCommunes', fn ($m) => $m->where('communes.id', $communeId)));
+            })
+            ->when($communeId, fn ($q) => $q->orWhere(fn ($q2) => $q2->where('role', 'agent_municipal')->where('commune_id', $communeId)))
+            ->get()
+            ->unique('id');
+    }
+
     public function submit(Request $request, User $user): Profile
     {
         return DB::transaction(function () use ($request, $user) {
+            $user->loadMissing('commune');
+            $localisation = $request->localisation ?: ($user->commune?->name);
+
             $profile = Profile::updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'category_id'     => $request->category_id,
-                    'bio'             => $request->bio,
-                    'competences'     => $request->competences,
-                    'experience'      => $request->experience,
-                    'localisation'    => $request->localisation,
-                    'secteur_activite'=> $request->secteur_activite,
-                    'telephone'       => $request->telephone,
-                    'site_web'        => $request->site_web,
-                    'niveau_etude'    => $request->niveau_etude,
-                    'status'          => 'pending',
+                    'category_id' => $request->category_id,
+                    'bio' => $request->bio,
+                    'competences' => $request->competences,
+                    'experience' => $request->experience,
+                    'localisation' => $localisation,
+                    'secteur_activite' => $request->secteur_activite,
+                    'telephone' => $request->telephone,
+                    'site_web' => $request->site_web,
+                    'niveau_etude' => $request->niveau_etude,
+                    'status' => 'pending',
                     'contact_visible' => $request->boolean('contact_visible', true),
                 ]
             );
 
             if ($request->hasFile('photo')) {
+                if ($profile->photo) {
+                    Storage::disk('public')->delete($profile->photo);
+                }
                 $path = $request->file('photo')->store('photos', 'public');
                 $profile->update(['photo' => $path]);
             }
 
-            // Supprimer les anciens documents lors d'une resoumission
-            if ($profile->wasRecentlyCreated === false) {
-                $profile->documents()->delete();
-            }
-
-            // Traiter le CV (obligatoire)
             if ($request->hasFile('documents.cv')) {
+                $profile->documents()->where('type', 'cv')->get()->each(function (Document $doc) {
+                    Storage::disk('public')->delete($doc->path);
+                    $doc->delete();
+                });
                 $file = $request->file('documents.cv');
                 $path = $file->store('documents/cv', 'public');
                 Document::create([
-                    'profile_id'    => $profile->id,
-                    'type'          => 'cv',
-                    'path'          => $path,
+                    'profile_id' => $profile->id,
+                    'type' => 'cv',
+                    'path' => $path,
                     'original_name' => $file->getClientOriginalName(),
-                    'mime_type'     => $file->getMimeType(),
-                    'size'          => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'size' => $file->getSize(),
                 ]);
             }
 
-            // Traiter les autres documents (optionnels)
             if ($request->hasFile('documents.other')) {
                 foreach ($request->file('documents.other') as $file) {
+                    if (! $file->isValid()) {
+                        continue;
+                    }
                     $path = $file->store('documents/other', 'public');
                     Document::create([
-                        'profile_id'    => $profile->id,
-                        'type'          => 'autre',
-                        'path'          => $path,
+                        'profile_id' => $profile->id,
+                        'type' => 'autre',
+                        'path' => $path,
                         'original_name' => $file->getClientOriginalName(),
-                        'mime_type'     => $file->getMimeType(),
-                        'size'          => $file->getSize(),
+                        'mime_type' => $file->getMimeType(),
+                        'size' => $file->getSize(),
                     ]);
                 }
             }
 
             Mail::to($user->email)->queue(new ProfileSubmittedMail($profile));
 
-            $admins = User::where('role', 'admin')->get();
-            foreach ($admins as $admin) {
-                if ($admin->notify_new_profile) {
-                    Mail::to($admin->email)->queue(new AdminNewProfileMail($profile));
+            foreach ($this->backofficeRecipientsForCommune($user->commune_id) as $recipient) {
+                if ($recipient->isAdmin() && $recipient->notify_new_profile) {
+                    Mail::to($recipient->email)->queue(new AdminNewProfileMail($profile));
                 }
-                $admin->notify(new NewProfileSubmitted($profile));
+                if ($recipient->isAdmin()) {
+                    $recipient->notify(new NewProfileSubmittedForAdmin($profile));
+                } else {
+                    $recipient->notify(new NewProfileSubmitted($profile));
+                }
             }
 
             return $profile;
@@ -129,18 +155,20 @@ class ProfileService
         return DB::transaction(function () use ($request, $profile) {
             $modRequest = ModificationRequest::create([
                 'profile_id' => $profile->id,
-                'status'     => 'pending',
-                'data'       => [
-                    'category_id'      => $request->category_id,
-                    'bio'              => $request->bio,
-                    'competences'      => $request->competences,
-                    'experience'       => $request->experience,
-                    'localisation'     => $request->localisation,
+                'status' => 'pending',
+                'data' => [
+                    'category_id' => $request->category_id,
+                    'bio' => $request->bio,
+                    'competences' => $request->competences,
+                    'experience' => $request->experience,
+                    'localisation' => $request->filled('localisation')
+                        ? $request->localisation
+                        : ($profile->user->commune?->name ?? $profile->localisation),
                     'secteur_activite' => $request->secteur_activite,
-                    'telephone'        => $request->telephone,
-                    'site_web'         => $request->site_web,
-                    'niveau_etude'     => $request->niveau_etude,
-                    'contact_visible'  => $request->boolean('contact_visible', true),
+                    'telephone' => $request->telephone,
+                    'site_web' => $request->site_web,
+                    'niveau_etude' => $request->niveau_etude,
+                    'contact_visible' => $request->boolean('contact_visible', true),
                 ],
             ]);
 
@@ -153,11 +181,11 @@ class ProfileService
                 $file = $request->file('documents.cv');
                 ModificationRequestDocument::create([
                     'modification_request_id' => $modRequest->id,
-                    'type'          => 'cv',
-                    'path'          => $file->store('modifications/cv', 'public'),
+                    'type' => 'cv',
+                    'path' => $file->store('modifications/cv', 'public'),
                     'original_name' => $file->getClientOriginalName(),
-                    'mime_type'     => $file->getMimeType(),
-                    'size'          => $file->getSize(),
+                    'mime_type' => $file->getMimeType(),
+                    'size' => $file->getSize(),
                 ]);
             }
 
@@ -165,18 +193,17 @@ class ProfileService
                 foreach ($request->file('documents.other') as $file) {
                     ModificationRequestDocument::create([
                         'modification_request_id' => $modRequest->id,
-                        'type'          => 'autre',
-                        'path'          => $file->store('modifications/other', 'public'),
+                        'type' => 'autre',
+                        'path' => $file->store('modifications/other', 'public'),
                         'original_name' => $file->getClientOriginalName(),
-                        'mime_type'     => $file->getMimeType(),
-                        'size'          => $file->getSize(),
+                        'mime_type' => $file->getMimeType(),
+                        'size' => $file->getSize(),
                     ]);
                 }
             }
 
-            $admins = User::where('role', 'admin')->get();
-            foreach ($admins as $admin) {
-                $admin->notify(new NewModificationRequested($modRequest));
+            foreach ($this->backofficeRecipientsForCommune($profile->user->commune_id) as $recipient) {
+                $recipient->notify(new NewModificationRequested($modRequest));
             }
 
             return $modRequest;
@@ -187,7 +214,7 @@ class ProfileService
     {
         DB::transaction(function () use ($modRequest) {
             $profile = $modRequest->profile;
-            $data    = $modRequest->data;
+            $data = $modRequest->data;
 
             // Appliquer les champs texte
             $profile->update($data);
@@ -212,12 +239,12 @@ class ProfileService
                 // Déplacer les documents de la demande vers le profil
                 foreach ($modRequest->documents as $doc) {
                     Document::create([
-                        'profile_id'    => $profile->id,
-                        'type'          => $doc->type,
-                        'path'          => $doc->path,
+                        'profile_id' => $profile->id,
+                        'type' => $doc->type,
+                        'path' => $doc->path,
                         'original_name' => $doc->original_name,
-                        'mime_type'     => $doc->mime_type,
-                        'size'          => $doc->size,
+                        'mime_type' => $doc->mime_type,
+                        'size' => $doc->size,
                     ]);
                 }
                 // Supprimer les entrées de la demande (fichiers déjà réutilisés)

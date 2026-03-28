@@ -6,24 +6,22 @@
     <title>@yield('title', 'CommunePro')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
     <style>
         [x-cloak] { display: none !important; }
         body { 
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #eff6ff 0%, #f9fafb 100%);
+            background: #fff;
             color: #111827;
             min-height: 100vh;
         }
     </style>
 </head>
-<body class="antialiased min-h-screen">
+<body class="antialiased min-h-screen font-sans">
 
     <!-- Simple Header -->
     <header class="bg-white border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
                 <a href="{{ route('home') }}" class="flex items-center gap-3">

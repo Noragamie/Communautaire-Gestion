@@ -6,13 +6,11 @@
     <title>@yield('title', 'Administration') — CommunePro</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
     <style>
         body { 
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #eff6ff 0%, #f9fafb 100%);
+            background: #fff;
         }
         [x-cloak] { display: none !important; }
         .stat-card { transition: all 0.3s ease; }
@@ -20,7 +18,7 @@
     </style>
     @stack('styles')
 </head>
-<body class="antialiased min-h-screen">
+<body class="antialiased min-h-screen font-sans">
 
 <div class="flex min-h-screen">
     <!-- Sidebar -->
@@ -104,6 +102,42 @@
             </div>
         </div>
 
+        @auth
+            @if(auth()->user()->isAdmin() && auth()->user()->managedCommunes()->count() === 0)
+                <div class="mx-4 mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900">
+                    Aucune commune assignée. Exécutez le seeder ou associez des communes au compte administrateur (table <code class="font-mono">admin_commune</code>).
+                </div>
+            @elseif(auth()->user()->isBackoffice())
+                <div class="px-4 py-3 border-b border-gray-100 bg-gray-50/80 text-sm">
+                    @if(auth()->user()->isAdmin() && isset($adminManagedCommunes) && $adminManagedCommunes->count() > 0)
+                        <form method="POST" action="{{ route('admin.commune.active') }}" class="flex flex-col gap-2">
+                            @csrf
+                            <label for="admin_commune_select" class="text-xs font-medium text-gray-500 uppercase tracking-wide">Périmètre</label>
+                            <select id="admin_commune_select" name="commune_id" onchange="this.form.submit()"
+                                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary-500 bg-white">
+                                <option value="all" @selected(!empty($adminViewingAllManagedCommunes))>
+                                    Toutes mes communes
+                                </option>
+                                @foreach($adminManagedCommunes as $c)
+                                    <option value="{{ $c->id }}"
+                                        @selected(empty($adminViewingAllManagedCommunes) && isset($adminActiveCommuneModel) && $adminActiveCommuneModel && (int) $adminActiveCommuneModel->id === (int) $c->id)>
+                                        {{ $c->name }}@if($c->department_name) — {{ $c->department_name }} @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                        </form>
+                    @else
+                        <p class="text-gray-600">
+                            <span class="text-gray-500">Territoire :</span>
+                            <span class="font-semibold text-gray-900">
+                                {{ $adminActiveCommuneModel->name ?? auth()->user()->commune?->name ?? '—' }}
+                            </span>
+                        </p>
+                    @endif
+                </div>
+            @endif
+        @endauth
+
         <nav class="p-4 space-y-1 flex-1 overflow-y-auto">
             <a href="{{ route('admin.dashboard') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
@@ -125,7 +159,6 @@
                 Profils
             </a>
 
-            @php $pendingModifications = \App\Models\ModificationRequest::where('status','pending')->count(); @endphp
             <a href="{{ route('admin.modifications.index') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
                       {{ request()->routeIs('admin.modifications.*') ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
@@ -134,13 +167,14 @@
                           d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                 </svg>
                 Modifications
-                @if($pendingModifications > 0)
+                @if(($adminLayoutPendingModifications ?? 0) > 0)
                     <span class="ml-auto bg-yellow-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                        {{ $pendingModifications }}
+                        {{ $adminLayoutPendingModifications }}
                     </span>
                 @endif
             </a>
 
+            @if(auth()->user()->isAdmin())
             <a href="{{ route('admin.categories.index') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
                       {{ request()->routeIs('admin.categories.*') ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
@@ -150,6 +184,7 @@
                 </svg>
                 Catégories
             </a>
+            @endif
 
             <a href="{{ route('admin.actualities.index') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
@@ -171,6 +206,7 @@
                 Annonces
             </a>
 
+            @if(auth()->user()->isAdmin())
             <a href="{{ route('admin.newsletter') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
                       {{ request()->routeIs('admin.newsletter') ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
@@ -180,6 +216,7 @@
                 </svg>
                 Newsletter
             </a>
+            @endif
 
             <a href="{{ route('admin.users.index') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
@@ -191,6 +228,7 @@
                 Utilisateurs
             </a>
 
+            @if(auth()->user()->isAdmin())
             <a href="{{ route('admin.logs') }}"
                class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all
                       {{ request()->routeIs('admin.logs*') ? 'bg-primary-50 text-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
@@ -200,6 +238,7 @@
                 </svg>
                 Journal des logs
             </a>
+            @endif
         </nav>
 
         <div class="p-4 border-t border-gray-200 space-y-1">

@@ -3,7 +3,7 @@
 
 @section('content')
 <section class="py-12 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Back Button -->
         <a href="{{ route('annuaire') }}" class="inline-flex items-center gap-2 text-gray-600 hover:text-primary-600 mb-8 font-medium text-sm transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,7 +46,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
-                            {{ $profile->localisation }}
+                            {{ $profile->user->commune?->name ?? $profile->localisation }}
                         </p>
                         <a href="{{ route('profiles.show', $profile) }}" 
                            class="inline-block w-full bg-primary-600 text-white px-4 py-2.5 rounded-xl hover:bg-primary-700 font-semibold transition-all text-sm shadow-lg hover:shadow-xl">

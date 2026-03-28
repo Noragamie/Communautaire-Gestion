@@ -2,7 +2,7 @@
 <html>
 <body style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
     <h2 style="color: #2d6a4f;">{{ $announcement->title }}</h2>
-    <p>{!! nl2br(e($announcement->content)) !!}</p>
+    <div style="line-height: 1.6; color: #333;">{!! \App\Support\Markdown::toHtml($announcement->content) !!}</div>
     @if($announcement->image)
         <img src="{{ asset('storage/' . $announcement->image) }}" alt="{{ $announcement->title }}" style="max-width: 100%; margin: 20px 0;">
     @endif

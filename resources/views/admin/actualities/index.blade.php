@@ -17,6 +17,21 @@
         </a>
     </div>
 
+    @if(!empty($showCommuneFilter))
+        <form method="GET" class="mb-6 flex flex-wrap items-end gap-3">
+            <div>
+                <label for="filter_commune_act" class="block text-xs font-medium text-gray-500 mb-1">Filtrer par commune</label>
+                <select id="filter_commune_act" name="commune_id" onchange="this.form.submit()"
+                        class="px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-primary-500 min-w-[12rem]">
+                    <option value="">Toutes (périmètre)</option>
+                    @foreach($managedCommunesForFilter as $c)
+                        <option value="{{ $c->id }}" @selected((string) request('commune_id') === (string) $c->id)>{{ $c->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </form>
+    @endif
+
     @if($actualities->isEmpty())
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-20 text-center">
             <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -68,8 +83,11 @@
                             </div>
                             <p class="text-sm text-gray-500 mb-2">
                                 Par {{ $actuality->author->name }} · {{ $actuality->created_at->format('d/m/Y') }}
+                                @if(auth()->user()->isAdmin() && $actuality->commune)
+                                    · <span class="text-primary-600 font-medium">{{ $actuality->commune->name }}</span>
+                                @endif
                             </p>
-                            <p class="text-sm text-gray-600 line-clamp-2">{{ Str::limit($actuality->content, 120) }}</p>
+                            <p class="text-sm text-gray-600 line-clamp-2">{{ \App\Support\Markdown::excerpt($actuality->content, 120) }}</p>
                         </div>
 
                         <div class="flex items-center gap-2 flex-shrink-0">
