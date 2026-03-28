@@ -171,7 +171,7 @@ class PublicProfileController extends Controller
         // Generate dynamic months from actualities - Database agnostic
         $driver = config('database.default');
         if ($driver === 'pgsql') {
-            $months = Actuality::published()
+            $months = Actuality::where('is_published', true)
                 ->selectRaw("TO_CHAR(published_at, 'YYYY-MM') as month")
                 ->groupBy('month')
                 ->orderByDesc('month')
@@ -185,7 +185,7 @@ class PublicProfileController extends Controller
                     ];
                 });
         } else {
-            $months = Actuality::published()
+            $months = Actuality::where('is_published', true)
                 ->selectRaw("strftime('%Y-%m', published_at) as month")
                 ->groupBy('month')
                 ->orderByDesc('month')
