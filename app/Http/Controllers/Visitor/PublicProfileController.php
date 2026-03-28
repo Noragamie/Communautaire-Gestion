@@ -152,8 +152,13 @@ class PublicProfileController extends Controller
         
         // Filter by month if provided
         if ($request->filled('month')) {
-            // SQLite uses strftime instead of DATE_FORMAT
-            $query->whereRaw("strftime('%Y-%m', published_at) = ?", [$request->month]);
+            // PostgreSQL uses TO_CHAR, SQLite uses strftime
+            $driver = config('database.default');
+            if ($driver === 'pgsql') {
+                $query->whereRaw("TO_CHAR(published_at, 'YYYY-MM') = ?", [$request->month]);
+            } else {
+                $query->whereRaw("strftime('%Y-%m', published_at) = ?", [$request->month]);
+            }
         }
 
         $communeId = (int) $request->input('commune_id', 0);
@@ -163,20 +168,37 @@ class PublicProfileController extends Controller
 
         $actualities = $query->paginate(10)->withQueryString();
         
-        // Generate dynamic months from actualities - SQLite compatible
-        $months = Actuality::published()
-            ->selectRaw("strftime('%Y-%m', published_at) as month")
-            ->groupBy('month')
-            ->orderBy('month', 'desc')
-            ->pluck('month')
-            ->filter()
-            ->map(function($month) {
-                $date = \Carbon\Carbon::createFromFormat('Y-m', $month);
-                return [
-                    'value' => $month,
-                    'label' => $date->translatedFormat('F Y')
-                ];
-            });
+        // Generate dynamic months from actualities - Database agnostic
+        $driver = config('database.default');
+        if ($driver === 'pgsql') {
+            $months = Actuality::published()
+                ->selectRaw("TO_CHAR(published_at, 'YYYY-MM') as month")
+                ->groupBy('month')
+                ->orderByDesc('month')
+                ->pluck('month')
+                ->filter()
+                ->map(function($month) {
+                    $date = \Carbon\Carbon::createFromFormat('Y-m', $month);
+                    return [
+                        'value' => $month,
+                        'label' => $date->translatedFormat('F Y')
+                    ];
+                });
+        } else {
+            $months = Actuality::published()
+                ->selectRaw("strftime('%Y-%m', published_at) as month")
+                ->groupBy('month')
+                ->orderBy('month', 'desc')
+                ->pluck('month')
+                ->filter()
+                ->map(function($month) {
+                    $date = \Carbon\Carbon::createFromFormat('Y-m', $month);
+                    return [
+                        'value' => $month,
+                        'label' => $date->translatedFormat('F Y')
+                    ];
+                });
+        }
         
         $communes = Commune::query()->orderBy('name')->get();
 
