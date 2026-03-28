@@ -53,20 +53,20 @@
                 <nav class="hidden md:flex items-center gap-8">
                     <a href="{{ route('home') }}" class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">Accueil</a>
                     <a href="{{ route('annuaire') }}" class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">Annuaire</a>
-                    @auth
+                    <!-- @auth
                         @if(auth()->user()->isOperateur())
                             <a href="{{ route('operator.announcements.index') }}" class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">Annonces</a>
                         @endif
-                    @endauth
+                    @endauth -->
                     <a href="{{ route('actualities') }}" class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">Actualités</a>
                     
                     <!-- Search Bar -->
-                    <div class="relative">
+                    <!-- <div class="relative">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                         </span>
                         <input type="text" placeholder="Rechercher..." class="w-64 bg-gray-50 border border-gray-200 rounded-full py-1.5 pl-10 pr-4 text-sm focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all">
-                    </div>
+                    </div> -->
                 </nav>
 
                 <!-- Auth Buttons -->
@@ -195,7 +195,7 @@
                         <!-- User Menu Dropdown -->
                         <div x-data="{ open: false }" class="relative">
                             <button @click="open = !open" class="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">
-                                <span class="hidden sm:inline">{{ auth()->user()->name }}</span>
+                                <span class="hidden sm:inline">Mon compte</span>
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
@@ -225,7 +225,7 @@
                                             Paramètres
                                         </a>
                                     @endif
-                                    @if(auth()->user()->isAdmin())
+                                    @if(auth()->user()->isBackoffice())
                                         <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                                             Administration

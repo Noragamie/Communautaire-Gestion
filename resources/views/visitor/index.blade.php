@@ -43,7 +43,7 @@
                         <a href="{{ route('operator.profile.create') }}" class="inline-flex w-full sm:w-auto justify-center px-8 py-3.5 rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg">
                             Créer mon profil
                         </a>
-                    @elseif(auth()->user()->isAdmin())
+                    @elseif(auth()->user()->isBackoffice())
                         <a href="{{ route('admin.dashboard') }}" class="inline-flex w-full sm:w-auto justify-center px-8 py-3.5 rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-800 transition-all shadow-md hover:shadow-lg">
                             Administration
                         </a>

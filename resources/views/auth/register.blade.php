@@ -45,6 +45,22 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Commune</label>
+                    <select name="commune_id" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all @error('commune_id') border-red-400 @enderror">
+                        <option value="">— Choisir votre commune —</option>
+                        @foreach($communes as $commune)
+                            <option value="{{ $commune->id }}" @selected(old('commune_id') == $commune->id)>
+                                {{ $commune->name }}@if($commune->department_name) ({{ $commune->department_name }})@endif
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('commune_id')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Adresse email</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">

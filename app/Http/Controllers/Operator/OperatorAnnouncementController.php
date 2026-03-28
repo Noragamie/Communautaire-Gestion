@@ -10,18 +10,35 @@ class OperatorAnnouncementController extends Controller
 {
     public function index()
     {
-        // Seuls les opérateurs avec un profil approuvé peuvent voir les annonces
-        $profile = Auth::user()->profile;
+        $user = Auth::user();
+        $user->loadMissing('commune');
+        $commune = $user->commune;
 
-        if (!$profile || $profile->status !== 'approved') {
+        $profile = $user->profile;
+
+        if (! $profile || $profile->status !== 'approved') {
             return view('operator.announcements.index', [
                 'announcements' => collect(),
-                'locked'        => true,
+                'locked' => true,
+                'commune' => $commune,
             ]);
         }
 
-        $announcements = Announcement::published()->paginate(10);
+        if (! $user->commune_id) {
+            return view('operator.announcements.index', [
+                'announcements' => collect(),
+                'locked' => false,
+                'no_commune' => true,
+                'commune' => null,
+            ]);
+        }
 
-        return view('operator.announcements.index', compact('announcements'));
+        $announcements = Announcement::published()
+            ->where('commune_id', $user->commune_id)
+            ->with('author')
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('operator.announcements.index', compact('announcements', 'commune'));
     }
 }

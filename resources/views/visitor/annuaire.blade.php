@@ -6,6 +6,9 @@
     if ($selectedCategoryIds === [] && request()->filled('category')) {
         $selectedCategoryIds = [(int) request('category')];
     }
+    $hasActiveFilters = request()->anyFilled(['search', 'location', 'commune_id', 'category'])
+        || count($selectedCategoryIds) > 0
+        || count($selectedNiveaux ?? []) > 0;
     $badgePalette = [
         'bg-violet-100 text-violet-800',
         'bg-emerald-100 text-emerald-800',
@@ -18,7 +21,7 @@
 @endphp
 
 @section('content')
-<form method="GET" action="{{ route('annuaire') }}" class="min-w-0">
+<form id="annuaire-form" method="GET" action="{{ route('annuaire') }}" class="min-w-0">
     <!-- Hero : fond #2563EB, pleine largeur viewport (sort du max-w du layout) -->
     <section class="relative w-screen max-w-[100vw] ml-[calc(50%-50vw)] overflow-x-hidden bg-[#2563EB] text-white">
         <div class="relative max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-14 lg:pt-16 lg:pb-20 w-full">
@@ -27,34 +30,22 @@
                     Trouvez les bons profils
                 </h1>
                 <p class="text-lg text-white/90 mb-8">
-                    Recherchez par nom, secteur ou ville parmi les membres approuvés de la communauté.
+                    Affinez par ville ci-dessous ; la recherche par nom ou secteur se fait dans la liste des résultats.
                 </p>
             </div>
 
-            <div class="max-w-4xl">
-                <div class="flex flex-col sm:flex-row sm:items-stretch gap-2 sm:gap-0 rounded-2xl sm:rounded-full bg-white p-2 shadow-xl shadow-black/20">
-                    <label class="flex flex-1 items-center gap-3 min-h-[3rem] px-4 text-gray-500">
-                        <svg class="w-5 h-5 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                        <input type="search" name="search" value="{{ request('search') }}"
-                               placeholder="Nom, secteur, compétences…"
-                               class="w-full min-w-0 border-0 bg-transparent text-gray-900 placeholder:text-gray-400 focus:ring-0 text-sm sm:text-base">
-                    </label>
-                    <div class="hidden sm:block w-px bg-gray-200 self-stretch my-2"></div>
-                    <label class="flex flex-1 sm:max-w-[220px] items-center gap-3 min-h-[3rem] px-4 text-gray-500 border-t border-gray-100 sm:border-0 pt-2 sm:pt-0">
-                        <svg class="w-5 h-5 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <input type="text" name="location" value="{{ request('location') }}"
-                               placeholder="Ville ou région"
-                               class="w-full min-w-0 border-0 bg-transparent text-gray-900 placeholder:text-gray-400 focus:ring-0 text-sm sm:text-base">
-                    </label>
-                    <button type="submit" class="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl sm:rounded-full bg-white text-[#2563EB] hover:bg-blue-50 font-semibold px-8 py-3 text-sm sm:text-base transition-colors shadow-sm">
-                        Rechercher
-                    </button>
-                </div>
+            <div class="max-w-xl">
+                <label class="flex items-center gap-3 min-h-[3rem] px-4 rounded-2xl sm:rounded-full bg-white shadow-xl shadow-black/20 text-gray-500">
+                    <svg class="w-5 h-5 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <input type="text" name="location" value="{{ request('location') }}"
+                           placeholder="Ville ou région (filtre automatique)"
+                           autocomplete="address-level2"
+                           onchange="this.form.submit()"
+                           class="w-full min-w-0 border-0 bg-transparent text-gray-900 placeholder:text-gray-400 focus:ring-0 text-sm sm:text-base">
+                </label>
             </div>
         </div>
     </section>
@@ -76,6 +67,7 @@
                                     <label class="flex items-start gap-3 cursor-pointer group">
                                         <input type="checkbox" name="categories[]" value="{{ $cat->id }}"
                                                @checked(in_array($cat->id, $selectedCategoryIds, true))
+                                               onchange="this.form.submit()"
                                                class="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
                                         <span class="flex-1 text-sm text-gray-700 group-hover:text-gray-900">
                                             <span class="font-medium">{{ $cat->name }}</span>
@@ -85,30 +77,66 @@
                                 </li>
                             @endforeach
                         </ul>
-                        <button type="submit" class="mt-5 w-full py-2.5 rounded-xl bg-gray-900 text-white text-sm font-semibold hover:bg-gray-800 transition-colors">
-                            Appliquer les filtres
-                        </button>
+                    </div>
+
+                    <div class="rounded-2xl bg-white border border-gray-200 p-5 shadow-sm">
+                        <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">Niveau d’études</h2>
+                        <ul class="space-y-3">
+                            @foreach($niveauOptions as $value => $label)
+                                <li>
+                                    <label class="flex items-start gap-3 cursor-pointer group">
+                                        <input type="checkbox" name="niveaux[]" value="{{ $value }}"
+                                               @checked(in_array($value, $selectedNiveaux, true))
+                                               onchange="this.form.submit()"
+                                               class="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                                        <span class="flex-1 text-sm text-gray-700 group-hover:text-gray-900 font-medium">{{ $label }}</span>
+                                    </label>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+
+                    <div class="rounded-2xl bg-white border border-gray-200 p-5 shadow-sm">
+                        <label for="annuaire-commune" class="block text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">Commune</label>
+                        <select id="annuaire-commune" name="commune_id" onchange="this.form.submit()"
+                                class="w-full rounded-xl border-gray-300 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 py-2.5 pl-3 pr-8">
+                            <option value="">Toutes les communes</option>
+                            @foreach($communes as $commune)
+                                <option value="{{ $commune->id }}" @selected((string) request('commune_id') === (string) $commune->id)>{{ $commune->name }}</option>
+                            @endforeach
+                        </select>
+                        <p class="text-xs text-gray-500 mt-2">Membres rattachés à cette commune sur la plateforme.</p>
                     </div>
 
                     <p class="text-xs text-gray-500 px-1">
-                        Astuce : combinez la recherche ci-dessus avec une ou plusieurs catégories pour affiner les résultats.
+                        Les filtres et la recherche s’appliquent dès que vous modifiez un critère.
                     </p>
                 </aside>
 
                 <!-- Grille profils -->
                 <div class="flex-1 min-w-0">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                        <p class="text-gray-700">
-                            <span class="font-semibold text-gray-900">{{ $profiles->total() }}</span>
-                            {{ $profiles->total() > 1 ? 'membres' : 'membre' }}
-                            @if(request()->anyFilled(['search', 'location', 'categories', 'category']))
-                                <span class="text-gray-500 font-normal">correspondant à vos critères</span>
-                            @endif
-                        </p>
-                        <div class="flex items-center gap-2">
+                    <p class="text-gray-700 mb-4">
+                        <span class="font-semibold text-gray-900">{{ $profiles->total() }}</span>
+                        {{ $profiles->total() > 1 ? 'membres' : 'membre' }}
+                        @if($hasActiveFilters)
+                            <span class="text-gray-500 font-normal">correspondant à vos critères</span>
+                        @endif
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-4 mb-6 min-w-0">
+                        <label class="flex flex-1 min-w-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500">
+                            <svg class="w-5 h-5 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            <input type="search" id="annuaire-search" name="search" value="{{ request('search') }}"
+                                   placeholder="Nom, secteur, compétences…"
+                                   autocomplete="off"
+                                   class="w-full min-w-0 border-0 bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:ring-0 py-1">
+                        </label>
+                        <div class="flex items-center gap-2 shrink-0">
                             <label for="annuaire-sort" class="text-sm text-gray-500 whitespace-nowrap">Trier par</label>
                             <select id="annuaire-sort" name="sort" onchange="this.form.submit()"
-                                    class="rounded-xl border-gray-200 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 py-2 pl-3 pr-8">
+                                    class="rounded-xl border-gray-200 text-sm text-gray-800 focus:border-primary-500 focus:ring-primary-500 py-2 pl-3 pr-8 min-w-[11rem]">
                                 <option value="newest" @selected(request('sort', 'newest') === 'newest')>Plus récents</option>
                                 <option value="name_asc" @selected(request('sort') === 'name_asc')>Nom (A → Z)</option>
                                 <option value="name_desc" @selected(request('sort') === 'name_desc')>Nom (Z → A)</option>
@@ -209,4 +237,17 @@
         </div>
     </section>
 </form>
+
+<script>
+(function () {
+    var form = document.getElementById('annuaire-form');
+    var input = document.getElementById('annuaire-search');
+    if (!form || !input) return;
+    var t;
+    input.addEventListener('input', function () {
+        clearTimeout(t);
+        t = setTimeout(function () { form.submit(); }, 450);
+    });
+})();
+</script>
 @endsection

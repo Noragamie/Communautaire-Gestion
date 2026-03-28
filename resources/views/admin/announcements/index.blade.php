@@ -17,6 +17,21 @@
         </a>
     </div>
 
+    @if(!empty($showCommuneFilter))
+        <form method="GET" class="mb-6 flex flex-wrap items-end gap-3">
+            <div>
+                <label for="filter_commune_ann" class="block text-xs font-medium text-gray-500 mb-1">Filtrer par commune</label>
+                <select id="filter_commune_ann" name="commune_id" onchange="this.form.submit()"
+                        class="px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-primary-500 min-w-[12rem]">
+                    <option value="">Toutes (périmètre)</option>
+                    @foreach($managedCommunesForFilter as $c)
+                        <option value="{{ $c->id }}" @selected((string) request('commune_id') === (string) $c->id)>{{ $c->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </form>
+    @endif
+
     @if($announcements->isEmpty())
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-20 text-center">
             <div class="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -79,6 +94,15 @@
                                     </svg>
                                     {{ $announcement->created_at->format('d/m/Y') }}
                                 </span>
+                                @if(auth()->user()->isAdmin() && $announcement->commune)
+                                    <span class="flex items-center gap-1 text-primary-600">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        {{ $announcement->commune->name }}
+                                    </span>
+                                @endif
                             </p>
                             <p class="text-sm text-gray-600 line-clamp-2">{{ Str::limit(strip_tags($announcement->content), 150) }}</p>
                         </div>

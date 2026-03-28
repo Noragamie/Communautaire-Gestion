@@ -29,6 +29,14 @@
                 <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approuvés</option>
                 <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejetés</option>
             </select>
+            @if(!empty($showCommuneFilter))
+                <select name="commune_id" class="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 min-w-[10rem]">
+                    <option value="">Toutes (périmètre)</option>
+                    @foreach($managedCommunesForFilter as $c)
+                        <option value="{{ $c->id }}" @selected((string) request('commune_id') === (string) $c->id)>{{ $c->name }}</option>
+                    @endforeach
+                </select>
+            @endif
             <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-8 py-3 rounded-xl font-semibold transition-all">
                 Filtrer
             </button>
@@ -63,6 +71,9 @@
                     <tr>
                         <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Utilisateur</th>
                         <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Catégorie</th>
+                        @if(auth()->user()->isAdmin())
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Commune</th>
+                        @endif
                         <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Localisation</th>
                         <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Statut</th>
                         <th class="px-6 py-4 text-left text-sm font-semibold text-gray-900">Soumis le</th>
@@ -89,6 +100,9 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-gray-600">{{ $profile->category->name }}</td>
+                            @if(auth()->user()->isAdmin())
+                                <td class="px-6 py-4 text-gray-600 text-sm">{{ $profile->user->commune?->name ?? '—' }}</td>
+                            @endif
                             <td class="px-6 py-4 text-gray-600">{{ $profile->localisation }}</td>
                             <td class="px-6 py-4">
                                 <span class="px-3 py-1 rounded-full text-xs font-semibold
@@ -180,7 +194,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="{{ auth()->user()->isAdmin() ? 7 : 6 }}" class="px-6 py-12 text-center">
                                 <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                     <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>

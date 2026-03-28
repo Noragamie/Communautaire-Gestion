@@ -36,6 +36,20 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 space-y-6">
+            @if(isset($communesForCreate) && $communesForCreate->isNotEmpty())
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Commune concernée *</label>
+                    <select name="commune_id" required
+                            class="w-full max-w-md px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent @error('commune_id') border-red-400 @enderror">
+                        <option value="" disabled @selected(!old('commune_id'))>Choisir une commune</option>
+                        @foreach($communesForCreate as $c)
+                            <option value="{{ $c->id }}" @selected((string) old('commune_id') === (string) $c->id)>{{ $c->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('commune_id')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
+                    <p class="text-xs text-gray-500 mt-1">En vue « toutes les communes », indiquez où publier l’annonce.</p>
+                </div>
+            @endif
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Titre *</label>
                 <input type="text" name="title" value="{{ old('title') }}" required autofocus

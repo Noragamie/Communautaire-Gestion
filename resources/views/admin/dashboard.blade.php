@@ -19,10 +19,21 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                     </svg>
                 </div>
-                <span class="text-sm font-semibold text-green-600">+12%</span>
+                @if(($stats['total_delta'] ?? null) !== null)
+                    @if($stats['total_delta'] > 0)
+                        <span class="text-sm font-semibold text-green-600" title="Nouveaux profils ce mois vs mois dernier">+{{ $stats['total_delta'] }}</span>
+                    @elseif($stats['total_delta'] < 0)
+                        <span class="text-sm font-semibold text-red-600" title="Nouveaux profils ce mois vs mois dernier">{{ $stats['total_delta'] }}</span>
+                    @else
+                        <span class="text-sm font-medium text-gray-400">=</span>
+                    @endif
+                @endif
             </div>
             <p class="text-sm font-medium text-gray-600 mb-1">Total profils</p>
             <p class="text-3xl font-bold text-gray-900">{{ $stats['total'] }}</p>
+            @if(($stats['total_delta'] ?? null) !== null)
+                <p class="text-xs text-gray-500 mt-2">Variation mois en cours vs mois précédent (créations)</p>
+            @endif
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
@@ -32,7 +43,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
-                <span class="text-sm font-semibold text-green-600">+5%</span>
             </div>
             <p class="text-sm font-medium text-gray-600 mb-1">En attente</p>
             <p class="text-3xl font-bold text-gray-900">{{ $stats['pending'] }}</p>
@@ -45,7 +55,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
-                <span class="text-sm font-semibold text-green-600">+8%</span>
             </div>
             <p class="text-sm font-medium text-gray-600 mb-1">Approuvés</p>
             <p class="text-3xl font-bold text-gray-900">{{ $stats['approved'] }}</p>
@@ -58,12 +67,64 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
-                <span class="text-sm font-semibold text-red-600">-3%</span>
             </div>
             <p class="text-sm font-medium text-gray-600 mb-1">Rejetés</p>
             <p class="text-3xl font-bold text-gray-900">{{ $stats['rejected'] }}</p>
         </div>
     </div>
+
+    <script type="application/json" id="dashboard-charts-payload">@json($chartPayload)</script>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-1">Répartition des statuts</h2>
+            <p class="text-sm text-gray-600 mb-4">Profils par état sur le périmètre actuel</p>
+            <div class="h-72 relative">
+                <canvas id="chart-status" aria-label="Graphique statuts"></canvas>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-1">Profils par catégorie</h2>
+            <p class="text-sm text-gray-600 mb-4">Répartition des opérateurs par catégorie</p>
+            <div class="h-72 relative">
+                <canvas id="chart-categories" aria-label="Graphique catégories"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-1">Nouveaux profils (6 mois)</h2>
+            <p class="text-sm text-gray-600 mb-4">Nombre de profils créés par mois</p>
+            <div class="h-72 relative">
+                <canvas id="chart-activity" aria-label="Graphique activité profils"></canvas>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-1">Annonces et actualités</h2>
+            <p class="text-sm text-gray-600 mb-4">
+                Contenus créés par mois
+                @if(auth()->user()->isAdmin() && \App\Services\CommuneContext::isAdminViewingAllManagedCommunes())
+                    (toutes vos communes)
+                @else
+                    (commune active)
+                @endif
+            </p>
+            <div class="h-72 relative">
+                <canvas id="chart-content" aria-label="Graphique annonces et actualités"></canvas>
+            </div>
+        </div>
+    </div>
+
+    @if(!empty($showCommuneComparison) && !empty($chartPayload['communes']['labels']))
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-8">
+            <h2 class="text-lg font-bold text-gray-900 mb-1">Profils approuvés par commune</h2>
+            <p class="text-sm text-gray-600 mb-4">Vue globale sur les communes que vous gérez (admin)</p>
+            <div class="h-72 max-w-3xl relative">
+                <canvas id="chart-communes" aria-label="Graphique communes"></canvas>
+            </div>
+        </div>
+    @endif
 
     <!-- Quick Actions -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -154,6 +215,8 @@
                             <x-badge type="success">Approuvé</x-badge>
                         @elseif($profile->status === 'pending')
                             <x-badge type="warning">En attente</x-badge>
+                        @elseif($profile->status === 'suspended')
+                            <x-badge type="default">Suspendu</x-badge>
                         @else
                             <x-badge type="danger">Rejeté</x-badge>
                         @endif

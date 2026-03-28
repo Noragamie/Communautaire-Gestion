@@ -74,7 +74,7 @@
             </form>
         </div>
 
-        {{-- Notifications --}}
+        @if(auth()->user()->isAdmin())
         <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
             <h2 class="text-xl font-bold text-gray-900 mb-2">Notifications par email</h2>
             <p class="text-sm text-gray-600 mb-6">Choisissez les emails que vous souhaitez recevoir.</p>
@@ -100,6 +100,7 @@
                 </div>
             </form>
         </div>
+        @endif
 
     </div>
 @endsection

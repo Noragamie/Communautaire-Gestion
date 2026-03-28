@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\WelcomeNewsletterMail;
 use App\Models\Actuality;
 use App\Models\Category;
+use App\Models\Commune;
 use App\Models\Newsletter;
 use App\Models\Profile;
 use App\Models\User;
@@ -40,9 +41,12 @@ class PublicProfileController extends Controller
 
     public function show(Profile $profile)
     {
-        if (!$profile->isApproved() || $profile->user->is_suspended) {
+        if (! $profile->isApproved() || $profile->user->is_suspended) {
             abort(404, 'Profil non disponible');
         }
+
+        $profile->loadMissing(['user', 'category']);
+
         return view('visitor.show', compact('profile'));
     }
 
@@ -53,7 +57,7 @@ class PublicProfileController extends Controller
             ->orderBy('name')
             ->get();
 
-        $query = Profile::approved()->with(['user', 'category', 'documents']);
+        $query = Profile::approved()->with(['user', 'category']);
 
         $categoryIds = array_values(array_filter(array_map('intval', (array) $request->input('categories', []))));
         if ($categoryIds === [] && $request->filled('category')) {
@@ -79,6 +83,25 @@ class PublicProfileController extends Controller
             $query->where('localisation', 'like', "%{$loc}%");
         }
 
+        $niveauOptions = [
+            'bac' => 'Baccalauréat',
+            'licence' => 'Licence',
+            'master' => 'Master',
+            'doctorat' => 'Doctorat',
+            'autre' => 'Autre',
+        ];
+        $selectedNiveaux = array_values(array_intersect(array_keys($niveauOptions), (array) $request->input('niveaux', [])));
+        if ($selectedNiveaux !== []) {
+            $query->whereIn('niveau_etude', $selectedNiveaux);
+        }
+
+        $communeId = (int) $request->input('commune_id', 0);
+        if ($communeId > 0 && Commune::query()->whereKey($communeId)->exists()) {
+            $query->whereHas('user', fn ($q) => $q->where('commune_id', $communeId));
+        }
+
+        $communes = Commune::query()->orderBy('name')->get();
+
         $sort = $request->input('sort', 'newest');
         match ($sort) {
             'name_asc' => $query->orderBy(
@@ -102,7 +125,13 @@ class PublicProfileController extends Controller
 
         $profiles = $query->paginate(12)->withQueryString();
 
-        return view('visitor.annuaire', compact('categories', 'profiles'));
+        return view('visitor.annuaire', compact(
+            'categories',
+            'profiles',
+            'communes',
+            'niveauOptions',
+            'selectedNiveaux',
+        ));
     }
 
     public function byCategory(Category $category, Request $request)
@@ -120,8 +149,13 @@ class PublicProfileController extends Controller
             // SQLite uses strftime instead of DATE_FORMAT
             $query->whereRaw("strftime('%Y-%m', published_at) = ?", [$request->month]);
         }
-        
-        $actualities = $query->paginate(10);
+
+        $communeId = (int) $request->input('commune_id', 0);
+        if ($communeId > 0 && Commune::query()->whereKey($communeId)->exists()) {
+            $query->where('commune_id', $communeId);
+        }
+
+        $actualities = $query->paginate(10)->withQueryString();
         
         // Generate dynamic months from actualities - SQLite compatible
         $months = Actuality::published()
@@ -138,7 +172,9 @@ class PublicProfileController extends Controller
                 ];
             });
         
-        return view('visitor.actualities', compact('actualities', 'months'));
+        $communes = Commune::query()->orderBy('name')->get();
+
+        return view('visitor.actualities', compact('actualities', 'months', 'communes'));
     }
 
     public function subscribeNewsletter(Request $request)

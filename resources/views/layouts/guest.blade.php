@@ -99,7 +99,7 @@
                             </div>
                         </div>
 
-                        <a href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('operator.profile.show') }}" 
+                        <a href="{{ auth()->user()->isBackoffice() ? route('admin.dashboard') : route('operator.profile.show') }}" 
                            class="text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors">
                             Mon espace
                         </a>

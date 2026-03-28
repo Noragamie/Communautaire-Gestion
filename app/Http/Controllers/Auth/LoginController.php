@@ -9,15 +9,15 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    public function showLoginForm() 
-    { 
-        return view('auth.login'); 
+    public function showLoginForm()
+    {
+        return view('auth.login');
     }
 
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required',
         ], [
             'email.required' => 'L\'adresse email est requise.',
@@ -30,10 +30,11 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $user = Auth::user();
 
-            if (!$user->hasVerifiedEmail()) {
+            if (! $user->hasVerifiedEmail()) {
                 Auth::logout();
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
+
                 return redirect()->route('login')
                     ->withErrors(['email' => 'Veuillez confirmer votre adresse email avant de vous connecter. Vérifiez votre boîte mail.'])
                     ->withInput($request->only('email'));
@@ -44,11 +45,12 @@ class LoginController extends Controller
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
                 AuthLog::create([
-                    'user_id'    => $user->id,
+                    'user_id' => $user->id,
                     'ip_address' => $request->ip(),
                     'user_agent' => $request->userAgent(),
-                    'action'     => 'failed',
+                    'action' => 'failed',
                 ]);
+
                 return back()->withErrors([
                     'email' => 'Votre compte a été suspendu. Contactez l\'administrateur.',
                 ])->withInput($request->only('email'));
@@ -57,24 +59,24 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             AuthLog::create([
-                'user_id'    => $user->id,
+                'user_id' => $user->id,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
-                'action'     => 'login',
+                'action' => 'login',
             ]);
 
-            return match($user->role) {
-                'admin'     => redirect()->route('admin.dashboard'),
+            return match ($user->role) {
+                'admin', 'agent_municipal' => redirect()->route('admin.dashboard'),
                 'operateur' => redirect()->route('operator.profile.show'),
-                default     => redirect()->route('home'),
+                default => redirect()->route('home'),
             };
         }
 
         AuthLog::create([
-            'user_id'    => null,
+            'user_id' => null,
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
-            'action'     => 'failed',
+            'action' => 'failed',
         ]);
 
         return back()->withErrors([
@@ -85,14 +87,15 @@ class LoginController extends Controller
     public function logout(Request $request)
     {
         AuthLog::create([
-            'user_id'    => Auth::id(),
+            'user_id' => Auth::id(),
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
-            'action'     => 'logout',
+            'action' => 'logout',
         ]);
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect('/');
     }
 }
