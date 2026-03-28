@@ -19,10 +19,10 @@ class AnnouncementPublished extends Notification
 
     public function toDatabase(object $notifiable): array
     {
-        $url = match($notifiable->role) {
-            'admin'     => route('admin.announcements.index'),
-            'operateur' => route('operator.announcements.index'),
-            default     => url('/'),
+        $url = match ($notifiable->role) {
+            'admin' => route('admin.announcements.edit', $this->announcement),
+            'operateur' => route('operator.announcements.show', $this->announcement),
+            default => url('/'),
         };
 
         return [

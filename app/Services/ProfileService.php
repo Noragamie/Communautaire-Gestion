@@ -161,7 +161,9 @@ class ProfileService
                     'bio' => $request->bio,
                     'competences' => $request->competences,
                     'experience' => $request->experience,
-                    'localisation' => $request->localisation,
+                    'localisation' => $request->filled('localisation')
+                        ? $request->localisation
+                        : ($profile->user->commune?->name ?? $profile->localisation),
                     'secteur_activite' => $request->secteur_activite,
                     'telephone' => $request->telephone,
                     'site_web' => $request->site_web,

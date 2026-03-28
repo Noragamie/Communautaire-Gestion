@@ -59,11 +59,10 @@
                         </select>
                         @error('category_id')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
                     </div>
-                    <div>
-                        <label for="localisation" class="block text-sm font-semibold text-gray-900 mb-2">Localisation <span class="text-red-500">*</span></label>
-                        <input type="text" id="localisation" name="localisation" value="{{ old('localisation', $profile->localisation) }}" required
-                               class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900">
-                        @error('localisation')<p class="text-red-600 text-sm mt-1">{{ $message }}</p>@enderror
+                    <div class="md:col-span-2 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm">
+                        <span class="font-semibold text-gray-900">Commune</span>
+                        <p class="text-gray-800 mt-0.5">{{ $profile->user->commune?->name ?? '—' }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Définie à l’inscription. La fiche utilise cette commune comme localisation dans l’annuaire.</p>
                     </div>
                     <div>
                         <label for="secteur_activite" class="block text-sm font-semibold text-gray-900 mb-2">Secteur d’activité <span class="text-red-500">*</span></label>

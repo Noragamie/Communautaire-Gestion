@@ -24,21 +24,29 @@ class OperatorAnnouncementController extends Controller
             ]);
         }
 
-        if (! $user->commune_id) {
-            return view('operator.announcements.index', [
-                'announcements' => collect(),
-                'locked' => false,
-                'no_commune' => true,
-                'commune' => null,
-            ]);
-        }
-
         $announcements = Announcement::published()
-            ->where('commune_id', $user->commune_id)
-            ->with('author')
+            ->with(['author', 'commune'])
             ->paginate(10)
             ->withQueryString();
 
         return view('operator.announcements.index', compact('announcements', 'commune'));
+    }
+
+    public function show(Announcement $announcement)
+    {
+        $user = Auth::user();
+        $user->loadMissing('profile');
+
+        if (! $user->profile || $user->profile->status !== 'approved') {
+            abort(403);
+        }
+
+        if (! $announcement->is_published) {
+            abort(404);
+        }
+
+        $announcement->load(['author', 'commune']);
+
+        return view('operator.announcements.show', compact('announcement'));
     }
 }

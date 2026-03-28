@@ -81,7 +81,8 @@
                 {{-- Contenu principal --}}
                 <div class="flex-1 min-w-0 space-y-6">
                     @forelse($actualities as $actuality)
-                        <article class="bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col md:flex-row hover:shadow-lg transition-shadow">
+                        <a href="{{ route('actualities.show', $actuality) }}"
+                           class="group bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col md:flex-row hover:shadow-lg hover:border-primary-200 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2">
                             <div class="md:w-1/3 h-56 md:h-auto md:min-h-[220px] overflow-hidden shrink-0">
                                 @if($actuality->image)
                                     <img src="{{ asset('storage/'.$actuality->image) }}"
@@ -107,12 +108,18 @@
                                         {{ $actuality->published_at->format('d/m/Y à H:i') }}
                                     </span>
                                 </div>
-                                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3">{{ $actuality->title }}</h2>
+                                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary-700 transition-colors">{{ $actuality->title }}</h2>
                                 <p class="text-gray-600 leading-relaxed line-clamp-3">
-                                    {{ \Illuminate\Support\Str::limit(strip_tags($actuality->content), 280) }}
+                                    {{ \App\Support\Markdown::excerpt($actuality->content, 280) }}
                                 </p>
+                                <span class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-primary-600 group-hover:text-primary-700">
+                                    Lire la suite
+                                    <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </span>
                             </div>
-                        </article>
+                        </a>
                     @empty
                         <div class="bg-white rounded-2xl border border-gray-200 p-12 sm:p-16 text-center">
                             <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-5">

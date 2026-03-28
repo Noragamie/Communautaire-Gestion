@@ -21,7 +21,7 @@ class ActualityPublished extends Notification
     {
         return [
             'message' => 'Nouvelle actualité : ' . $this->actuality->title,
-            'url'     => route('actualities'),
+            'url'     => route('actualities.show', $this->actuality),
         ];
     }
 }

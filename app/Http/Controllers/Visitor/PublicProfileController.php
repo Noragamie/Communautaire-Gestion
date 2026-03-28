@@ -17,17 +17,19 @@ class PublicProfileController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Profile::approved()->with(['user','category','documents']);
+        $query = Profile::approved()->with(['user.commune', 'category', 'documents']);
 
         if ($request->filled('category')) {
             $query->where('category_id', $request->category);
         }
         if ($request->filled('search')) {
             $s = $request->search;
-            $query->where(function($q) use ($s) {
-                $q->whereHas('user', fn($qu)=>$qu->where('name','like',"%$s%"))
-                  ->orWhere('bio','like',"%$s%")
-                  ->orWhere('secteur_activite','like',"%$s%");
+            $query->where(function ($q) use ($s) {
+                $q->whereHas('user', fn ($qu) => $qu->where('name', 'like', "%{$s}%"))
+                    ->orWhere('bio', 'like', "%{$s}%")
+                    ->orWhere('secteur_activite', 'like', "%{$s}%")
+                    ->orWhere('localisation', 'like', "%{$s}%")
+                    ->orWhereHas('user.commune', fn ($cq) => $cq->where('name', 'like', "%{$s}%"));
             });
         }
 
@@ -45,7 +47,7 @@ class PublicProfileController extends Controller
             abort(404, 'Profil non disponible');
         }
 
-        $profile->loadMissing(['user', 'category']);
+        $profile->loadMissing(['user.commune', 'category']);
 
         return view('visitor.show', compact('profile'));
     }
@@ -57,7 +59,7 @@ class PublicProfileController extends Controller
             ->orderBy('name')
             ->get();
 
-        $query = Profile::approved()->with(['user', 'category']);
+        $query = Profile::approved()->with(['user.commune', 'category']);
 
         $categoryIds = array_values(array_filter(array_map('intval', (array) $request->input('categories', []))));
         if ($categoryIds === [] && $request->filled('category')) {
@@ -74,13 +76,17 @@ class PublicProfileController extends Controller
                     ->orWhere('bio', 'like', "%{$s}%")
                     ->orWhere('secteur_activite', 'like', "%{$s}%")
                     ->orWhere('localisation', 'like', "%{$s}%")
-                    ->orWhere('competences', 'like', "%{$s}%");
+                    ->orWhere('competences', 'like', "%{$s}%")
+                    ->orWhereHas('user.commune', fn ($cq) => $cq->where('name', 'like', "%{$s}%"));
             });
         }
 
         if ($request->filled('location')) {
             $loc = $request->input('location');
-            $query->where('localisation', 'like', "%{$loc}%");
+            $query->where(function ($q) use ($loc) {
+                $q->where('localisation', 'like', "%{$loc}%")
+                    ->orWhereHas('user.commune', fn ($cq) => $cq->where('name', 'like', "%{$loc}%"));
+            });
         }
 
         $niveauOptions = [
@@ -136,7 +142,7 @@ class PublicProfileController extends Controller
 
     public function byCategory(Category $category, Request $request)
     {
-        $profiles = $category->profiles()->approved()->with('user','documents')->paginate(12);
+        $profiles = $category->profiles()->approved()->with(['user.commune', 'documents'])->paginate(12);
         return view('visitor.category', compact('category','profiles'));
     }
 
@@ -175,6 +181,17 @@ class PublicProfileController extends Controller
         $communes = Commune::query()->orderBy('name')->get();
 
         return view('visitor.actualities', compact('actualities', 'months', 'communes'));
+    }
+
+    public function showActuality(Actuality $actuality)
+    {
+        if (! $actuality->is_published) {
+            abort(404);
+        }
+
+        $actuality->load(['author', 'commune']);
+
+        return view('visitor.actuality-show', compact('actuality'));
     }
 
     public function subscribeNewsletter(Request $request)

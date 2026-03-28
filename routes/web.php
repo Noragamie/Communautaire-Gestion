@@ -32,6 +32,7 @@ Route::get('/profils/{profile}', [PublicProfileController::class, 'show'])->name
 Route::get('/annuaire', [PublicProfileController::class, 'annuaire'])->name('annuaire');
 Route::get('/annuaire/{category}', [PublicProfileController::class, 'byCategory'])->name('category.show');
 Route::get('/actualites', [PublicProfileController::class, 'actualities'])->name('actualities');
+Route::get('/actualites/{actuality}', [PublicProfileController::class, 'showActuality'])->name('actualities.show');
 Route::post('/newsletter/subscribe', [PublicProfileController::class, 'subscribeNewsletter'])->name('newsletter.subscribe');
 Route::get('/newsletter/unsubscribe/{token}', [PublicProfileController::class, 'unsubscribeNewsletter'])->name('newsletter.unsubscribe');
 
@@ -84,6 +85,7 @@ Route::prefix('mon-espace')->name('operator.')->middleware(['auth', 'verified', 
     Route::delete('/documents/{document}', [OperatorProfileController::class, 'destroyDocument'])->name('document.destroy');
     Route::patch('/profil/contact-visible', [OperatorProfileController::class, 'toggleContactVisible'])->name('profile.contact-visible');
     Route::get('/annonces', [OperatorAnnouncementController::class, 'index'])->name('announcements.index');
+    Route::get('/annonces/{announcement}', [OperatorAnnouncementController::class, 'show'])->name('announcements.show');
     Route::get('/parametres', [OperatorSettingsController::class, 'index'])->name('settings');
     Route::put('/parametres/compte', [OperatorSettingsController::class, 'updateAccount'])->name('settings.account');
     Route::put('/parametres/mot-de-passe', [OperatorSettingsController::class, 'updatePassword'])->name('settings.password');

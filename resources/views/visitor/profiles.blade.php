@@ -16,7 +16,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="md:col-span-2">
                         <input type="text" name="search" value="{{ request('search') }}" 
-                               placeholder="Rechercher par nom, secteur, localisation..."
+                               placeholder="Rechercher par nom, secteur, commune…"
                                class="input-modern">
                     </div>
                     
@@ -43,15 +43,14 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             @php
                 $profiles = \App\Models\Profile::approved()
-                    ->with(['user', 'category'])
-                    ->when(request('search'), function($query) {
+                    ->with(['user.commune', 'category'])
+                    ->when(request('search'), function ($query) {
                         $search = request('search');
-                        $query->where(function($q) use ($search) {
+                        $query->where(function ($q) use ($search) {
                             $q->where('secteur_activite', 'like', "%{$search}%")
-                              ->orWhere('localisation', 'like', "%{$search}%")
-                              ->orWhereHas('user', function($uq) use ($search) {
-                                  $uq->where('name', 'like', "%{$search}%");
-                              });
+                                ->orWhere('localisation', 'like', "%{$search}%")
+                                ->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$search}%"))
+                                ->orWhereHas('user.commune', fn ($cq) => $cq->where('name', 'like', "%{$search}%"));
                         });
                     })
                     ->when(request('category'), function($query) {
@@ -84,7 +83,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
-                            <span>{{ $profile->localisation }}</span>
+                            <span>{{ $profile->user->commune?->name ?? $profile->localisation }}</span>
                         </div>
                         
                         @if($profile->category)

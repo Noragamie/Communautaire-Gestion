@@ -16,7 +16,7 @@ class OperatorProfileController extends Controller
 
     public function show()
     {
-        $profile = Auth::user()->profile()->with(['documents', 'category', 'user', 'modificationRequest'])->first();
+        $profile = Auth::user()->profile()->with(['documents', 'category', 'user.commune', 'modificationRequest'])->first();
         
         if (!$profile) {
             return redirect()->route('operator.profile.create')
@@ -28,7 +28,9 @@ class OperatorProfileController extends Controller
 
     public function create()
     {
+        Auth::user()->loadMissing('commune');
         $categories = Category::all();
+
         return view('operator.profile.create', compact('categories'));
     }
 
@@ -46,7 +48,7 @@ class OperatorProfileController extends Controller
 
     public function edit()
     {
-        $profile = Auth::user()->profile()->with('documents')->first();
+        $profile = Auth::user()->profile()->with(['documents', 'user.commune'])->first();
         if (! $profile) {
             return redirect()->route('operator.profile.create');
         }

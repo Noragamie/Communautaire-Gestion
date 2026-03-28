@@ -29,7 +29,7 @@ class ProfileRequest extends FormRequest
             'bio' => 'nullable|string|max:255',
             'competences' => 'nullable|string|max:65535',
             'experience' => 'nullable|string|max:65535',
-            'localisation' => 'required|string|max:200',
+            'localisation' => 'nullable|string|max:200',
             'secteur_activite' => 'required|string|max:200',
             'telephone' => 'nullable|string|max:20',
             'site_web' => 'nullable|url|max:255',
@@ -45,7 +45,6 @@ class ProfileRequest extends FormRequest
     {
         return [
             'category_id.required' => 'Veuillez sélectionner une catégorie.',
-            'localisation.required' => 'La localisation est obligatoire.',
             'secteur_activite.required' => 'Le secteur d\'activité est obligatoire.',
             'photo.image' => 'La photo doit être une image (jpg, png, webp).',
             'documents.cv.required' => 'Votre CV est obligatoire pour la première soumission.',

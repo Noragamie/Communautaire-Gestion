@@ -71,13 +71,14 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Contenu *</label>
-                    <textarea name="content" rows="8" required
+                    <textarea name="content" id="actuality-content" data-easymde rows="10" required
                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all
                                      @error('content') border-red-400 @enderror"
-                              placeholder="Rédigez le contenu de l'actualité...">{{ old('content') }}</textarea>
+                              placeholder="Rédigez le contenu (Markdown : titres, listes, liens, code…)">{{ old('content') }}</textarea>
                     @error('content')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
+                    <p class="text-xs text-gray-500 mt-2">Le texte est enregistré en Markdown.</p>
                 </div>
 
                 <div>
@@ -100,3 +101,7 @@
 
     </form>
 @endsection
+
+@push('scripts')
+    @vite(['resources/js/admin-markdown.js'])
+@endpush

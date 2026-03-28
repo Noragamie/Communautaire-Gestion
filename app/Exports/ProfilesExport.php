@@ -38,7 +38,7 @@ class ProfilesExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         return [
             $profile->user->name,
             $profile->user->email,
-            $profile->category->name,
+            $profile->category?->name ?? '',
             $profile->localisation,
             $profile->secteur_activite,
             $profile->niveau_etude,

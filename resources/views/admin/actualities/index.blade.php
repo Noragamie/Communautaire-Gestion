@@ -87,7 +87,7 @@
                                     · <span class="text-primary-600 font-medium">{{ $actuality->commune->name }}</span>
                                 @endif
                             </p>
-                            <p class="text-sm text-gray-600 line-clamp-2">{{ Str::limit($actuality->content, 120) }}</p>
+                            <p class="text-sm text-gray-600 line-clamp-2">{{ \App\Support\Markdown::excerpt($actuality->content, 120) }}</p>
                         </div>
 
                         <div class="flex items-center gap-2 flex-shrink-0">

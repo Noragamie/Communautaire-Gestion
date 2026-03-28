@@ -104,7 +104,7 @@
                                     </span>
                                 @endif
                             </p>
-                            <p class="text-sm text-gray-600 line-clamp-2">{{ Str::limit(strip_tags($announcement->content), 150) }}</p>
+                            <p class="text-sm text-gray-600 line-clamp-2">{{ \App\Support\Markdown::excerpt($announcement->content, 150) }}</p>
                         </div>
 
                         <div class="flex items-center gap-2 flex-shrink-0">

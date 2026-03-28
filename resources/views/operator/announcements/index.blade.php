@@ -1,32 +1,27 @@
 @extends('layouts.app')
-@section('title', 'Annonces de la commune - CommunePro')
+@section('title', 'Annonces - CommunePro')
 
 @section('content')
 <div class="bg-gray-50 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-8 rounded-2xl border border-gray-100">
     <div class="max-w-6xl mx-auto">
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Annonces de la commune</h1>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Annonces</h1>
                 <p class="text-gray-600 mt-1 text-sm sm:text-base max-w-2xl">
                     @if($locked ?? false)
-                        Consultez ici les annonces publiées par l’administration pour votre commune, une fois votre profil validé.
-                    @elseif(! empty($no_commune))
-                        Les annonces sont affichées par commune : votre compte doit être rattaché à une commune.
+                        Consultez ici toutes les annonces publiées sur la plateforme, une fois votre profil validé.
                     @else
-                        Publications officielles
-                        @if(($commune ?? null)?->name)
-                            de <span class="font-semibold text-gray-800">{{ $commune->name }}</span>
-                        @endif
-                        . Elles sont gérées par l’équipe d’administration.
+                        Publications officielles de toutes les communes, gérées par l’équipe d’administration.
+                        
                     @endif
                 </p>
             </div>
-            @if(! ($locked ?? false) && empty($no_commune) && isset($announcements) && $announcements->isNotEmpty())
+            <!-- @if(! ($locked ?? false) && isset($announcements) && $announcements->isNotEmpty())
                 <a href="{{ route('operator.profile.show') }}"
                    class="inline-flex items-center justify-center text-sm font-semibold text-primary-600 hover:text-primary-700 shrink-0">
                     Mon profil
                 </a>
-            @endif
+            @endif -->
         </div>
 
         @if($locked ?? false)
@@ -47,21 +42,6 @@
                     </a>
                 </div>
             </div>
-        @elseif(! empty($no_commune))
-            <div class="rounded-2xl border border-amber-200 bg-amber-50 p-8 sm:p-10">
-                <div class="max-w-lg mx-auto text-center">
-                    <div class="w-14 h-14 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto mb-5">
-                        <svg class="w-7 h-7 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                    </div>
-                    <h2 class="text-lg font-bold text-amber-900 mb-2">Commune non renseignée</h2>
-                    <p class="text-sm text-amber-800 leading-relaxed">
-                        Votre compte n’est pas rattaché à une commune. Contactez l’administration pour associer votre profil à une commune et accéder aux annonces locales.
-                    </p>
-                </div>
-            </div>
         @elseif($announcements->isEmpty())
             <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 sm:p-16 text-center">
                 <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-5">
@@ -71,13 +51,13 @@
                 </div>
                 <h2 class="text-lg font-bold text-gray-900 mb-2">Aucune annonce pour le moment</h2>
                 <p class="text-gray-600 text-sm max-w-md mx-auto">
-                    Il n’y a pas encore de publication pour votre commune. Revenez plus tard ou contactez votre administration locale.
+                    Il n’y a pas encore d’annonce publiée sur la plateforme. Revenez plus tard.
                 </p>
             </div>
         @else
             <div class="space-y-6">
                 @foreach($announcements as $announcement)
-                    <article class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col md:flex-row hover:shadow-md transition-shadow">
+                    <article class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col md:flex-row hover:shadow-md transition-shadow group">
                         <div class="md:w-2/5 lg:w-1/3 h-52 md:h-auto md:min-h-[200px] shrink-0 overflow-hidden bg-gray-100">
                             @if($announcement->image)
                                 <img src="{{ asset('storage/'.$announcement->image) }}"
@@ -96,11 +76,16 @@
                                 <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 text-primary-800 border border-primary-100">
                                     Annonce
                                 </span>
+                                @if($announcement->commune)
+                                    <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                                        {{ $announcement->commune->name }}
+                                    </span>
+                                @endif
                                 <span class="text-sm text-gray-500 flex items-center gap-1">
                                     <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
-                                    {{ $announcement->published_at->format('d/m/Y à H:i') }}
+                                    {{ $announcement->published_at?->format('d/m/Y à H:i') }}
                                 </span>
                                 @if($announcement->author)
                                     <span class="text-sm text-gray-500">
@@ -108,8 +93,21 @@
                                     </span>
                                 @endif
                             </div>
-                            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3">{{ $announcement->title }}</h2>
-                            <div class="text-gray-700 leading-relaxed whitespace-pre-line">{{ $announcement->content }}</div>
+                            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary-700 transition-colors">
+                                <a href="{{ route('operator.announcements.show', $announcement) }}" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 rounded">
+                                    {{ $announcement->title }}
+                                </a>
+                            </h2>
+                            <p class="text-gray-600 leading-relaxed line-clamp-3 mb-4">
+                                {{ \App\Support\Markdown::excerpt($announcement->content, 240) }}
+                            </p>
+                            <a href="{{ route('operator.announcements.show', $announcement) }}"
+                               class="inline-flex items-center gap-1.5 text-sm font-semibold text-primary-600 hover:text-primary-700">
+                                Lire la suite
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
                         </div>
                     </article>
                 @endforeach
