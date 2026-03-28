@@ -188,7 +188,7 @@ class PublicProfileController extends Controller
             $months = Actuality::published()
                 ->selectRaw("strftime('%Y-%m', published_at) as month")
                 ->groupBy('month')
-                ->orderBy('month', 'desc')
+                ->orderByDesc('month')
                 ->pluck('month')
                 ->filter()
                 ->map(function($month) {
