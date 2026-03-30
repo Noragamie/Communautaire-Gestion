@@ -79,7 +79,8 @@ class OperatorProfileController extends Controller
             return redirect()->route('operator.profile.show')
                 ->with('success', 'Profil mis à jour et soumis pour re-validation.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Erreur lors de la mise à jour du profil.'])->withInput();
+            \Log::error('Erreur modification profil: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return back()->withErrors(['error' => 'Erreur lors de la mise à jour du profil: ' . $e->getMessage()])->withInput();
         }
     }
 

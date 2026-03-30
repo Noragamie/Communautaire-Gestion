@@ -153,28 +153,41 @@ class ProfileService
     public function submitModificationRequest(Request $request, Profile $profile): ModificationRequest
     {
         return DB::transaction(function () use ($request, $profile) {
+            \Log::info('Début submitModificationRequest', [
+                'profile_id' => $profile->id,
+                'user_id' => $profile->user_id,
+                'commune_id' => $profile->user->commune_id
+            ]);
+
+            $data = [
+                'category_id' => $request->category_id,
+                'bio' => $request->bio,
+                'competences' => $request->competences,
+                'experience' => $request->experience,
+                'localisation' => $request->filled('localisation')
+                    ? $request->localisation
+                    : ($profile->user->commune?->name ?? $profile->localisation),
+                'secteur_activite' => $request->secteur_activite,
+                'telephone' => $request->telephone,
+                'site_web' => $request->site_web,
+                'niveau_etude' => $request->niveau_etude,
+                'contact_visible' => $request->boolean('contact_visible', true),
+            ];
+
+            \Log::info('Données à enregistrer', ['data' => $data]);
+
             $modRequest = ModificationRequest::create([
                 'profile_id' => $profile->id,
                 'status' => 'pending',
-                'data' => [
-                    'category_id' => $request->category_id,
-                    'bio' => $request->bio,
-                    'competences' => $request->competences,
-                    'experience' => $request->experience,
-                    'localisation' => $request->filled('localisation')
-                        ? $request->localisation
-                        : ($profile->user->commune?->name ?? $profile->localisation),
-                    'secteur_activite' => $request->secteur_activite,
-                    'telephone' => $request->telephone,
-                    'site_web' => $request->site_web,
-                    'niveau_etude' => $request->niveau_etude,
-                    'contact_visible' => $request->boolean('contact_visible', true),
-                ],
+                'data' => $data,
             ]);
+
+            \Log::info('ModificationRequest créée', ['id' => $modRequest->id]);
 
             if ($request->hasFile('photo')) {
                 $path = $request->file('photo')->store('modifications/photos', 'public');
                 $modRequest->update(['new_photo' => $path]);
+                \Log::info('Photo ajoutée', ['path' => $path]);
             }
 
             if ($request->hasFile('documents.cv')) {
@@ -187,6 +200,7 @@ class ProfileService
                     'mime_type' => $file->getMimeType(),
                     'size' => $file->getSize(),
                 ]);
+                \Log::info('CV ajouté');
             }
 
             if ($request->hasFile('documents.other')) {
@@ -200,11 +214,17 @@ class ProfileService
                         'size' => $file->getSize(),
                     ]);
                 }
+                \Log::info('Autres documents ajoutés');
             }
 
-            foreach ($this->backofficeRecipientsForCommune($profile->user->commune_id) as $recipient) {
+            $recipients = $this->backofficeRecipientsForCommune($profile->user->commune_id);
+            \Log::info('Destinataires trouvés', ['count' => $recipients->count()]);
+
+            foreach ($recipients as $recipient) {
                 $recipient->notify(new NewModificationRequested($modRequest));
             }
+
+            \Log::info('Notifications envoyées');
 
             return $modRequest;
         });
