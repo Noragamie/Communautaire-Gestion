@@ -21,8 +21,10 @@ use App\Http\Controllers\Operator\OperatorAnnouncementController;
 use App\Http\Controllers\Operator\OperatorProfileController;
 use App\Http\Controllers\Operator\OperatorSettingsController;
 use App\Http\Controllers\Visitor\PublicProfileController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Models\User;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 // PUBLIC (visiteurs)
@@ -49,18 +51,32 @@ Route::middleware('guest')->group(function () {
 });
 Route::post('/deconnexion', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
-// VÉRIFICATION EMAIL
+// Lien signé : fonctionne depuis n'importe quel appareil (pas besoin d'être déjà connecté sur ce navigateur).
+Route::get('/email/verify/{id}/{hash}', function (Request $request, string $id, string $hash) {
+    $user = User::findOrFail($id);
+
+    if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        abort(403);
+    }
+
+    if (! $user->hasVerifiedEmail()) {
+        $user->markEmailAsVerified();
+        event(new Verified($user));
+    }
+
+    Auth::login($user, false);
+    $request->session()->regenerate();
+
+    if ($user->isBackoffice()) {
+        return redirect()->route('admin.dashboard')->with('success', 'Email confirmé ! Bienvenue.');
+    }
+
+    return redirect()->route('operator.profile.show')->with('success', 'Email confirmé ! Bienvenue.');
+})->middleware('signed')->name('verification.verify');
+
+// VÉRIFICATION EMAIL (écran + renvoi : utilisateur connecté)
 Route::middleware('auth')->group(function () {
     Route::get('/email/verify', fn () => view('auth.verify-email'))->name('verification.notice');
-    Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-        $request->fulfill();
-        $user = $request->user();
-        if ($user->isBackoffice()) {
-            return redirect()->route('admin.dashboard')->with('success', 'Email confirmé ! Bienvenue.');
-        }
-
-        return redirect()->route('operator.profile.show')->with('success', 'Email confirmé ! Bienvenue.');
-    })->middleware('signed')->name('verification.verify');
     Route::post('/email/resend', function (Request $request) {
         $request->user()->sendEmailVerificationNotification();
 
