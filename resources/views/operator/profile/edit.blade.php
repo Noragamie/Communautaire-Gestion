@@ -39,7 +39,7 @@
         @endif
 
         <form method="POST" action="{{ route('operator.profile.update') }}" enctype="multipart/form-data"
-              x-data="{ loading: false, photoPreview: @js($profile->photo ? asset('storage/'.$profile->photo) : null) }"
+              x-data="{ loading: false, photoPreview: @js($profile->photo ? image_url($profile, 'photo', 'photo_data') : null) }"
               @submit="loading = true"
               class="space-y-6">
             @csrf
@@ -187,7 +187,7 @@
                                         <p class="text-xs text-gray-500">{{ $docLabels[$doc->type] ?? ucfirst($doc->type) }}@if($doc->size) · {{ number_format($doc->size / 1024, 1) }} Ko @endif</p>
                                     </div>
                                     <div class="flex items-center gap-2 flex-shrink-0">
-                                        <a href="{{ asset('storage/'.$doc->path) }}" target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-primary-600 hover:text-primary-700">Ouvrir</a>
+                                        <a href="{{ image_url($doc, 'path', 'file_data') }}" target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-primary-600 hover:text-primary-700">Ouvrir</a>
                                         <form method="POST" action="{{ route('operator.document.destroy', $doc) }}" onsubmit="return confirm('Supprimer ce document ?');">
                                             @csrf
                                             @method('DELETE')

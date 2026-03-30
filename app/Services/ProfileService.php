@@ -67,24 +67,27 @@ class ProfileService
             );
 
             if ($request->hasFile('photo')) {
-                if ($profile->photo) {
-                    Storage::disk('public')->delete($profile->photo);
-                }
-                $path = $request->file('photo')->store('photos', 'public');
-                $profile->update(['photo' => $path]);
+                $file = $request->file('photo');
+                // Stocker en base64
+                $imageData = base64_encode(file_get_contents($file->getRealPath()));
+                $mimeType = $file->getMimeType();
+                $profile->update([
+                    'photo_data' => "data:{$mimeType};base64,{$imageData}",
+                    'photo' => $file->getClientOriginalName()
+                ]);
             }
 
             if ($request->hasFile('documents.cv')) {
-                $profile->documents()->where('type', 'cv')->get()->each(function (Document $doc) {
-                    Storage::disk('public')->delete($doc->path);
-                    $doc->delete();
-                });
+                $profile->documents()->where('type', 'cv')->delete();
                 $file = $request->file('documents.cv');
-                $path = $file->store('documents/cv', 'public');
+                // Stocker en base64
+                $fileData = base64_encode(file_get_contents($file->getRealPath()));
+                $mimeType = $file->getMimeType();
                 Document::create([
                     'profile_id' => $profile->id,
                     'type' => 'cv',
-                    'path' => $path,
+                    'path' => $file->getClientOriginalName(),
+                    'file_data' => "data:{$mimeType};base64,{$fileData}",
                     'original_name' => $file->getClientOriginalName(),
                     'mime_type' => $file->getMimeType(),
                     'size' => $file->getSize(),
@@ -96,11 +99,14 @@ class ProfileService
                     if (! $file->isValid()) {
                         continue;
                     }
-                    $path = $file->store('documents/other', 'public');
+                    // Stocker en base64
+                    $fileData = base64_encode(file_get_contents($file->getRealPath()));
+                    $mimeType = $file->getMimeType();
                     Document::create([
                         'profile_id' => $profile->id,
                         'type' => 'autre',
-                        'path' => $path,
+                        'path' => $file->getClientOriginalName(),
+                        'file_data' => "data:{$mimeType};base64,{$fileData}",
                         'original_name' => $file->getClientOriginalName(),
                         'mime_type' => $file->getMimeType(),
                         'size' => $file->getSize(),
@@ -146,7 +152,6 @@ class ProfileService
 
     public function deleteDocument(Document $document): void
     {
-        Storage::disk('public')->delete($document->path);
         $document->delete();
     }
 
@@ -185,17 +190,25 @@ class ProfileService
             \Log::info('ModificationRequest créée', ['id' => $modRequest->id]);
 
             if ($request->hasFile('photo')) {
-                $path = $request->file('photo')->store('modifications/photos', 'public');
-                $modRequest->update(['new_photo' => $path]);
-                \Log::info('Photo ajoutée', ['path' => $path]);
+                $file = $request->file('photo');
+                $imageData = base64_encode(file_get_contents($file->getRealPath()));
+                $mimeType = $file->getMimeType();
+                $modRequest->update([
+                    'new_photo' => $file->getClientOriginalName(),
+                    'new_photo_data' => "data:{$mimeType};base64,{$imageData}"
+                ]);
+                \Log::info('Photo ajoutée', ['name' => $file->getClientOriginalName()]);
             }
 
             if ($request->hasFile('documents.cv')) {
                 $file = $request->file('documents.cv');
+                $fileData = base64_encode(file_get_contents($file->getRealPath()));
+                $mimeType = $file->getMimeType();
                 ModificationRequestDocument::create([
                     'modification_request_id' => $modRequest->id,
                     'type' => 'cv',
-                    'path' => $file->store('modifications/cv', 'public'),
+                    'path' => $file->getClientOriginalName(),
+                    'file_data' => "data:{$mimeType};base64,{$fileData}",
                     'original_name' => $file->getClientOriginalName(),
                     'mime_type' => $file->getMimeType(),
                     'size' => $file->getSize(),
@@ -205,10 +218,13 @@ class ProfileService
 
             if ($request->hasFile('documents.other')) {
                 foreach ($request->file('documents.other') as $file) {
+                    $fileData = base64_encode(file_get_contents($file->getRealPath()));
+                    $mimeType = $file->getMimeType();
                     ModificationRequestDocument::create([
                         'modification_request_id' => $modRequest->id,
                         'type' => 'autre',
-                        'path' => $file->store('modifications/other', 'public'),
+                        'path' => $file->getClientOriginalName(),
+                        'file_data' => "data:{$mimeType};base64,{$fileData}",
                         'original_name' => $file->getClientOriginalName(),
                         'mime_type' => $file->getMimeType(),
                         'size' => $file->getSize(),
@@ -240,21 +256,18 @@ class ProfileService
             $profile->update($data);
 
             // Appliquer la nouvelle photo
-            if ($modRequest->new_photo) {
-                if ($profile->photo) {
-                    Storage::disk('public')->delete($profile->photo);
-                }
-                $profile->update(['photo' => $modRequest->new_photo]);
+            if ($modRequest->new_photo_data) {
+                $profile->update([
+                    'photo_data' => $modRequest->new_photo_data,
+                    'photo' => $modRequest->new_photo
+                ]);
             }
 
             // Appliquer les nouveaux documents
             if ($modRequest->documents->isNotEmpty()) {
                 // Supprimer les anciens documents des types remplacés
                 $newTypes = $modRequest->documents->pluck('type')->unique();
-                $profile->documents()->whereIn('type', $newTypes)->each(function ($doc) {
-                    Storage::disk('public')->delete($doc->path);
-                    $doc->delete();
-                });
+                $profile->documents()->whereIn('type', $newTypes)->delete();
 
                 // Déplacer les documents de la demande vers le profil
                 foreach ($modRequest->documents as $doc) {
@@ -262,12 +275,13 @@ class ProfileService
                         'profile_id' => $profile->id,
                         'type' => $doc->type,
                         'path' => $doc->path,
+                        'file_data' => $doc->file_data,
                         'original_name' => $doc->original_name,
                         'mime_type' => $doc->mime_type,
                         'size' => $doc->size,
                     ]);
                 }
-                // Supprimer les entrées de la demande (fichiers déjà réutilisés)
+                // Supprimer les entrées de la demande
                 $modRequest->documents()->delete();
             }
 
@@ -280,14 +294,7 @@ class ProfileService
     public function rejectModification(ModificationRequest $modRequest, string $motif): void
     {
         DB::transaction(function () use ($modRequest, $motif) {
-            // Supprimer les fichiers temporaires
-            if ($modRequest->new_photo) {
-                Storage::disk('public')->delete($modRequest->new_photo);
-            }
-            foreach ($modRequest->documents as $doc) {
-                Storage::disk('public')->delete($doc->path);
-            }
-
+            // Pas besoin de supprimer les fichiers (stockés en base64)
             $modRequest->update(['status' => 'rejected', 'motif_rejet' => $motif]);
             Mail::to($modRequest->profile->user->email)->queue(new ModificationRejectedMail($modRequest->profile, $motif));
             $modRequest->profile->user->notify(new ModificationRejected($modRequest->profile, $motif));

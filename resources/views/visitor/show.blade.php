@@ -31,7 +31,7 @@
             <div class="flex flex-col lg:flex-row lg:items-center gap-6">
                 @if($profile->photo)
                     <div class="flex-shrink-0 w-28 h-28 sm:w-32 sm:h-32 rounded-2xl border border-gray-100 shadow-sm overflow-hidden bg-gray-50 mx-auto lg:mx-0">
-                        <img src="{{ asset('storage/'.$profile->photo) }}" alt="" class="w-full h-full object-cover">
+                        <img src="{{ image_url($profile, 'photo', 'photo_data') }}" alt="" class="w-full h-full object-cover">
                     </div>
                 @else
                     <div class="flex-shrink-0 w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center shadow-sm mx-auto lg:mx-0">

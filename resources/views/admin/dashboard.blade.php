@@ -194,7 +194,7 @@
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all group">
                     <div class="flex items-center gap-4">
                         @if($profile->photo)
-                            <img src="{{ asset('storage/'.$profile->photo) }}" alt="{{ $profile->user->name }}"
+                            <img src="{{ image_url($profile, 'photo', 'photo_data') }}" alt="{{ $profile->user->name }}"
                                  class="w-12 h-12 rounded-xl object-cover ring-2 ring-gray-200 group-hover:ring-primary-500 transition-all">
                         @else
                             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center ring-2 ring-gray-200 group-hover:ring-primary-500 transition-all">

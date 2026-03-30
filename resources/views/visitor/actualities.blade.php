@@ -85,7 +85,7 @@
                            class="group bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col md:flex-row hover:shadow-lg hover:border-primary-200 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2">
                             <div class="md:w-1/3 h-56 md:h-auto md:min-h-[220px] overflow-hidden shrink-0">
                                 @if($actuality->image)
-                                    <img src="{{ asset('storage/'.$actuality->image) }}"
+                                    <img src="{{ image_url($actuality, 'image', 'image_data') }}"
                                          alt="{{ $actuality->title }}"
                                          class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
                                 @else

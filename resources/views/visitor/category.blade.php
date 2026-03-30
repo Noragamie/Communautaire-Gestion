@@ -30,7 +30,7 @@
                 <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all hover:-translate-y-1 group">
                     <div class="p-6 text-center">
                         @if($profile->photo)
-                            <img src="{{ asset('storage/'.$profile->photo) }}" alt="{{ $profile->user->name }}" 
+                            <img src="{{ image_url($profile, 'photo', 'photo_data') }}" alt="{{ $profile->user->name }}" 
                                  class="w-20 h-20 rounded-full mx-auto mb-4 object-cover ring-4 ring-gray-100 group-hover:ring-primary-100 transition-all">
                         @else
                             <div class="w-20 h-20 rounded-full mx-auto mb-4 bg-gradient-to-br from-primary-100 to-accent-100 flex items-center justify-center ring-4 ring-gray-100 group-hover:ring-primary-100 transition-all">

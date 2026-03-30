@@ -100,7 +100,12 @@ class ActualityController extends Controller
             $data['published_at'] = $publish ? now() : null;
 
             if ($request->hasFile('image')) {
-                $data['image'] = $request->file('image')->store('actualities', 'public');
+                $file = $request->file('image');
+                // Stocker en base64 dans la DB (pas de fichier)
+                $imageData = base64_encode(file_get_contents($file->getRealPath()));
+                $mimeType = $file->getMimeType();
+                $data['image_data'] = "data:{$mimeType};base64,{$imageData}";
+                $data['image'] = $file->getClientOriginalName(); // Garder le nom pour référence
             }
 
             $actuality = Actuality::create($data);
@@ -149,10 +154,12 @@ class ActualityController extends Controller
             $data['published_at'] = $publish ? ($actuality->published_at ?? now()) : null;
 
             if ($request->hasFile('image')) {
-                if ($actuality->image) {
-                    Storage::disk('public')->delete($actuality->image);
-                }
-                $data['image'] = $request->file('image')->store('actualities', 'public');
+                $file = $request->file('image');
+                // Stocker en base64 dans la DB
+                $imageData = base64_encode(file_get_contents($file->getRealPath()));
+                $mimeType = $file->getMimeType();
+                $data['image_data'] = "data:{$mimeType};base64,{$imageData}";
+                $data['image'] = $file->getClientOriginalName();
             }
 
             $actuality->update($data);

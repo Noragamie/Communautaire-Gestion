@@ -56,7 +56,7 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all">
                     <div class="flex items-start gap-6">
                         @if($announcement->image)
-                            <img src="{{ asset('storage/' . $announcement->image) }}"
+                            <img src="{{ image_url($announcement, 'image', 'image_data') }}"
                                  alt="{{ $announcement->title }}"
                                  class="w-24 h-24 rounded-xl object-cover flex-shrink-0 ring-2 ring-gray-100">
                         @else
