@@ -188,11 +188,13 @@
                                     </div>
                                     <div class="flex items-center gap-2 flex-shrink-0">
                                         <a href="{{ image_url($doc, 'path', 'file_data') }}" target="_blank" rel="noopener noreferrer" class="text-sm font-semibold text-primary-600 hover:text-primary-700">Ouvrir</a>
-                                        <form method="POST" action="{{ route('operator.document.destroy', $doc) }}" onsubmit="return confirm('Supprimer ce document ?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-700">Supprimer</button>
-                                        </form>
+                                        {{-- Pas de <form> ici : un formulaire dans un formulaire est invalide en HTML et le navigateur ferme le formulaire parent → le bouton « Enregistrer » ne soumet plus rien. --}}
+                                        <button type="submit"
+                                                form="operator-delete-document-{{ $doc->id }}"
+                                                onclick="return confirm('Supprimer ce document ?');"
+                                                class="text-sm font-medium text-red-600 hover:text-red-700 bg-transparent border-0 cursor-pointer p-0">
+                                            Supprimer
+                                        </button>
                                     </div>
                                 </li>
                             @endforeach
@@ -243,6 +245,19 @@
                 </button>
             </div>
         </form>
+
+        @if($profile->documents->isNotEmpty())
+            @foreach($profile->documents as $doc)
+                <form id="operator-delete-document-{{ $doc->id }}"
+                      method="POST"
+                      action="{{ route('operator.document.destroy', $doc) }}"
+                      class="hidden"
+                      aria-hidden="true">
+                    @csrf
+                    @method('DELETE')
+                </form>
+            @endforeach
+        @endif
     </div>
 </div>
 
