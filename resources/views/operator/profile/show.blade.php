@@ -84,10 +84,18 @@
                        class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 shadow-sm transition-colors">
                         Modifier mon profil
                     </a>
-                    <a href="{{ route('profiles.show', $profile) }}"
-                       class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50 hover:border-gray-300 transition-colors">
-                        Voir le profil public
-                    </a>
+                    @if($profile->isApproved())
+                        <a href="{{ route('profiles.show', $profile) }}"
+                           class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50 hover:border-gray-300 transition-colors">
+                            Voir le profil public
+                        </a>
+                    @else
+                        <button type="button" disabled
+                                class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-gray-200 bg-gray-100 text-gray-400 text-sm font-semibold cursor-not-allowed"
+                                title="Votre profil n'est pas encore validé">
+                            Voir le profil public
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -107,7 +115,7 @@
                 <svg class="w-6 h-6 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <div>
                     <p class="font-semibold text-yellow-900">Profil en attente de validation</p>
-                    <p class="text-sm text-yellow-800">Votre profil est en cours de vérification par notre équipe.</p>
+                    <p class="text-sm text-yellow-800">Votre profil est en cours de vérification par notre équipe. Vous ne pouvez pas encore voir votre profil public.</p>
                 </div>
             </div>
         @elseif($profile->status === 'rejected')
@@ -118,7 +126,7 @@
                     @if($profile->motif_rejet)
                         <p class="text-sm text-red-800 mt-1"><span class="font-medium">Motif :</span> {{ $profile->motif_rejet }}</p>
                     @endif
-                    <p class="text-sm text-red-800 mt-2">Modifiez votre profil puis soumettez-le à nouveau.</p>
+                    <p class="text-sm text-red-800 mt-2">Modifiez votre profil puis soumettez-le à nouveau pour validation.</p>
                 </div>
             </div>
         @elseif($profile->status === 'suspended')
