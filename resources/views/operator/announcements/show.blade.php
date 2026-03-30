@@ -18,7 +18,7 @@
         <article class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             @if($announcement->image)
                 <div class="aspect-[21/9] max-h-80 w-full overflow-hidden bg-gray-100">
-                    <img src="{{ asset('storage/'.$announcement->image) }}"
+                    <img src="{{ image_url($announcement, 'image', 'image_data') }}"
                          alt=""
                          class="w-full h-full object-cover">
                 </div>

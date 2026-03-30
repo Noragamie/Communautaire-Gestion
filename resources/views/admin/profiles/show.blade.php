@@ -19,7 +19,7 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-6">
                         @if($profile->photo)
-                            <img src="{{ asset('storage/'.$profile->photo) }}" alt="{{ $profile->user->name }}"
+                            <img src="{{ image_url($profile, 'photo', 'photo_data') }}" alt="{{ $profile->user->name }}"
                                  class="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover">
                         @else
                             <div class="w-24 h-24 rounded-full border-4 border-white shadow-lg bg-white/20 flex items-center justify-center">
@@ -144,7 +144,7 @@
                                             <p class="text-xs text-gray-500">{{ number_format($doc->size / 1024, 2) }} KB • {{ ucfirst($doc->type) }}</p>
                                         </div>
                                     </div>
-                                    <a href="{{ asset('storage/'.$doc->path) }}" target="_blank" download
+                                    <a href="{{ image_url($doc, 'path', 'file_data') }}" target="_blank" download
                                        class="ml-4 px-3 py-2 text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors flex-shrink-0">
                                         Télécharger
                                     </a>

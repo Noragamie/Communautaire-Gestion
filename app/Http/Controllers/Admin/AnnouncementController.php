@@ -99,7 +99,11 @@ class AnnouncementController extends Controller
             $data['published_at'] = $publish ? now() : null;
 
             if ($request->hasFile('image')) {
-                $data['image'] = $request->file('image')->store('announcements', 'public');
+                $file = $request->file('image');
+                $imageData = base64_encode(file_get_contents($file->getRealPath()));
+                $mimeType = $file->getMimeType();
+                $data['image_data'] = "data:{$mimeType};base64,{$imageData}";
+                $data['image'] = $file->getClientOriginalName();
             }
 
             $announcement = Announcement::create($data);
@@ -148,10 +152,11 @@ class AnnouncementController extends Controller
             $data['published_at'] = $publish ? ($announcement->published_at ?? now()) : null;
 
             if ($request->hasFile('image')) {
-                if ($announcement->image) {
-                    Storage::disk('public')->delete($announcement->image);
-                }
-                $data['image'] = $request->file('image')->store('announcements', 'public');
+                $file = $request->file('image');
+                $imageData = base64_encode(file_get_contents($file->getRealPath()));
+                $mimeType = $file->getMimeType();
+                $data['image_data'] = "data:{$mimeType};base64,{$imageData}";
+                $data['image'] = $file->getClientOriginalName();
             }
 
             $announcement->update($data);
@@ -175,9 +180,6 @@ class AnnouncementController extends Controller
         try {
             $label = $announcement->title;
             $id = $announcement->id;
-            if ($announcement->image) {
-                Storage::disk('public')->delete($announcement->image);
-            }
             $announcement->delete();
             ActivityLogger::log('announcement_deleted', 'Announcement', $id, $label);
 

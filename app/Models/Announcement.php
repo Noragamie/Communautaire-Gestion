@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Announcement extends Model
 {
-    protected $fillable = ['user_id', 'commune_id', 'title', 'content', 'image', 'is_published', 'published_at'];
+    protected $fillable = ['user_id', 'commune_id', 'title', 'content', 'image', 'image_data', 'is_published', 'published_at'];
 
     protected $casts = [
         'is_published' => 'boolean',

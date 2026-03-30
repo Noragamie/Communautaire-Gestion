@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ModificationRequest extends Model
 {
-    protected $fillable = ['profile_id', 'status', 'data', 'new_photo', 'motif_rejet'];
+    protected $fillable = ['profile_id', 'status', 'data', 'new_photo', 'new_photo_data', 'motif_rejet'];
 
     protected $casts = ['data' => 'array'];
 

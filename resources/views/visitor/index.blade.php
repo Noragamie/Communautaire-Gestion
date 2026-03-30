@@ -214,7 +214,7 @@
                 <div class="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-xl transition-all hover:-translate-y-1">
                     <div class="text-center">
                         @if($profile->photo)
-                            <img src="{{ asset('storage/'.$profile->photo) }}" 
+                            <img src="{{ image_url($profile, 'photo', 'photo_data') }}" 
                                  alt="{{ $profile->user->name }}" 
                                  class="w-20 h-20 rounded-xl mx-auto object-cover mb-4 border-2 border-gray-100">
                         @else

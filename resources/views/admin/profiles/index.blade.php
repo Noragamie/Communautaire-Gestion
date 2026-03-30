@@ -86,7 +86,7 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     @if($profile->photo)
-                                        <img src="{{ asset('storage/'.$profile->photo) }}" alt="{{ $profile->user->name }}"
+                                        <img src="{{ image_url($profile, 'photo', 'photo_data') }}" alt="{{ $profile->user->name }}"
                                              class="w-10 h-10 rounded-xl object-cover ring-2 ring-gray-200">
                                     @else
                                         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center ring-2 ring-gray-200">

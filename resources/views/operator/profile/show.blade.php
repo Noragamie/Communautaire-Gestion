@@ -42,7 +42,7 @@
                 <div class="flex items-start gap-5 flex-1 min-w-0">
                     @if($profile->photo)
                         <div class="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-2xl border border-gray-100 shadow-sm overflow-hidden bg-gray-50">
-                            <img src="{{ asset('storage/'.$profile->photo) }}"
+                            <img src="{{ image_url($profile, 'photo', 'photo_data') }}"
                                  alt=""
                                  class="w-full h-full object-cover">
                         </div>
@@ -283,7 +283,7 @@
                                         <p class="text-sm font-semibold text-gray-900 truncate">{{ $doc->original_name ?? basename($doc->path) }}</p>
                                         <p class="text-xs text-gray-500">{{ $docTypeLabels[$doc->type] ?? ucfirst($doc->type) }}@if($doc->size) · {{ number_format($doc->size / 1024, 1) }} Ko @endif</p>
                                     </div>
-                                    <a href="{{ asset('storage/'.$doc->path) }}"
+                                    <a href="{{ image_url($doc, 'path', 'file_data') }}"
                                        target="_blank"
                                        rel="noopener noreferrer"
                                        class="flex-shrink-0 text-sm font-semibold text-primary-600 hover:text-primary-700">

@@ -60,7 +60,7 @@
                     <article class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col md:flex-row hover:shadow-md transition-shadow group">
                         <div class="md:w-2/5 lg:w-1/3 h-52 md:h-auto md:min-h-[200px] shrink-0 overflow-hidden bg-gray-100">
                             @if($announcement->image)
-                                <img src="{{ asset('storage/'.$announcement->image) }}"
+                                <img src="{{ image_url($announcement, 'image', 'image_data') }}"
                                      alt=""
                                      class="w-full h-full object-cover md:min-h-[200px] hover:scale-[1.02] transition-transform duration-300">
                             @else

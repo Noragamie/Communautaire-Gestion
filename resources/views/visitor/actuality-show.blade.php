@@ -51,7 +51,7 @@
             <div class="max-w-3xl mx-auto">
                 @if($actuality->image)
                     <figure class="mb-8 rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-white">
-                        <img src="{{ asset('storage/'.$actuality->image) }}"
+                        <img src="{{ image_url($actuality, 'image', 'image_data') }}"
                              alt=""
                              class="w-full max-h-[min(28rem,70vh)] object-cover">
                     </figure>

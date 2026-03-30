@@ -11,7 +11,7 @@
         <!-- Avatar -->
         <div class="mb-4">
             @if($profile->photo)
-                <img src="{{ asset('storage/'.$profile->photo) }}" 
+                <img src="{{ image_url($profile, 'photo', 'photo_data') }}" 
                      alt="{{ $profile->user->name }}" 
                      class="w-24 h-24 rounded-2xl object-cover ring-4 ring-dark-800 mx-auto">
             @else

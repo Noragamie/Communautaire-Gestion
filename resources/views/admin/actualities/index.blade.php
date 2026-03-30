@@ -55,8 +55,8 @@
             @foreach($actualities as $actuality)
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all">
                     <div class="flex items-start gap-5">
-                        @if($actuality->image)
-                            <img src="{{ asset('storage/' . $actuality->image) }}"
+                        @if($actuality->image || $actuality->image_data)
+                            <img src="{{ image_url($actuality, 'image', 'image_data') }}"
                                  alt="{{ $actuality->title }}"
                                  class="w-20 h-20 rounded-xl object-cover flex-shrink-0">
                         @else

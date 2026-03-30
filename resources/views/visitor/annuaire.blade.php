@@ -155,7 +155,7 @@
                                 <div class="p-5 flex flex-col flex-1">
                                     <div class="flex items-start justify-between gap-3 mb-4">
                                         @if($profile->photo)
-                                            <img src="{{ asset('storage/'.$profile->photo) }}" alt="{{ $profile->user->name }}"
+                                            <img src="{{ image_url($profile, 'photo', 'photo_data') }}" alt="{{ $profile->user->name }}"
                                                  class="w-14 h-14 rounded-xl object-cover ring-2 ring-gray-100 group-hover:ring-primary-100 transition-all">
                                         @else
                                             <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-100 to-accent-100 flex items-center justify-center ring-2 ring-gray-100">

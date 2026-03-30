@@ -12,7 +12,7 @@ class Profile extends Model
 
     protected $fillable = [
         'user_id','category_id','bio','competences','experience',
-        'localisation','secteur_activite','photo','telephone',
+        'localisation','secteur_activite','photo','photo_data','telephone',
         'site_web','niveau_etude','status','motif_rejet','contact_visible',
     ];
 

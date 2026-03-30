@@ -70,7 +70,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Image</label>
                 @if($actuality->image && !old('title'))
                     <div class="mb-3">
-                        <img src="{{ asset('storage/' . $actuality->image) }}"
+                        <img src="{{ image_url($actuality, 'image', 'image_data') }}"
                              alt="Image actuelle"
                              class="w-full h-48 object-cover rounded-xl border border-gray-200">
                         <p class="text-xs text-gray-400 mt-1">Image actuelle — remplacer en sélectionnant un nouveau fichier</p>
