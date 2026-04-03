@@ -1,51 +1,131 @@
-# Gestion Communautaire - Projet Laravel 11
+# 🚀 Gestion Communautaire - Projet Laravel 11
 
-## 🚀 Démarrage rapide
+## 📌 Prérequis
 
-Le projet est déjà configuré et prêt à l'emploi!
+Avant de lancer le projet, assurez-vous d’avoir :
 
-### Lancer l'application
+- PHP **≥ 8.2** (idéalement 8.4)
+- Composer
+- Node.js et npm
+- SQLite (ou autre base de données)
+
+---
+
+## ⚙️ Installation
 
 ```bash
+git clone <repo-url>
 cd gestion-communautaire
+````
+
+### 1. Installer les dépendances backend
+
+```bash
+composer install
+```
+
+### 2. Configurer l’environnement
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+---
+
+## 🗄️ Configuration de la base de données
+
+Le projet utilise **SQLite** par défaut.
+
+```bash
+touch database/database.sqlite
+```
+
+Vérifiez dans `.env` :
+
+```env
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
+```
+
+---
+
+## 📦 Migration et Seeders
+
+```bash
+php artisan migrate --seed
+```
+
+---
+
+## 🎨 Installation du frontend
+
+```bash
+npm install
+npm run build
+```
+
+---
+
+## ▶️ Lancer l’application
+
+### Option 1 : Script automatique
+
+```bash
 ./start.sh
 ```
 
-Ou manuellement:
+### Option 2 : Manuel
+
 ```bash
-cd gestion-communautaire
 php artisan serve
 ```
 
-L'application sera accessible sur: **http://127.0.0.1:8000** (ou 8001/8002 si le port est occupé)
+Accès à l'application :
 
-### Lancer les tests
+👉 [http://127.0.0.1:8000](http://127.0.0.1:8000)
+(Si occupé : 8001 ou 8002)
+
+---
+
+## 🧪 Lancer les tests
 
 ```bash
-cd gestion-communautaire
 php artisan test
 ```
 
-## ✅ Configuration actuelle
+---
 
-- ✅ Laravel 11 installé
-- ✅ SQLite configuré (database/database.sqlite)
-- ✅ Migrations exécutées
-- ✅ Dépendances installées:
-  - maatwebsite/excel (export Excel)
-  - barryvdh/laravel-dompdf (export PDF)
-- ✅ Tests fonctionnels
+## 🔐 Comptes par défaut
 
-## 📝 Prochaines étapes
+Après le seeding :
 
-Pour compléter le projet avec les fonctionnalités décrites dans install.sh:
+* **Administrateur**
+  Email: `admin@commune.bj`
+  Mot de passe: `password123`
 
-1. Copier les modèles, contrôleurs, vues depuis les fichiers ALL_*.php
-2. Configurer les routes et middleware
-3. Créer les seeders pour les données de test
-4. Configurer l'envoi d'emails (MAIL_* dans .env)
 
-## 🔑 Comptes par défaut (après seeding)
+## ✅ État du projet
 
-- Administrateur: admin@commune.bj / password123
-- Opérateur: jean@example.com / password123
+* ✔️ Laravel 11 installé
+* ✔️ Base de données SQLite configurée
+* ✔️ Migrations et seeders opérationnels
+* ✔️ Dépendances installées :
+
+  * `maatwebsite/excel` (export Excel)
+  * `barryvdh/laravel-dompdf` (export PDF)
+* ✔️ Tests fonctionnels
+
+---
+
+## 📄 Licence
+
+Ce projet est destiné à un usage académique / interne.
+
+---
+
+## 👨‍💻 Auteur
+
+Projet développé dans le cadre d’une application de gestion communautaire.
+
+```
